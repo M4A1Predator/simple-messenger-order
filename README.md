@@ -50,5 +50,6 @@ If you have name collision issue, you can change css/stylus-loader module config
 ### Warning
 This project setup is for development. If you want to use in production, you need to consider about coding standard, performance, config , and security issues.
 
-- Author
+Author
+-
 Thanachai "Predator" Swangarom
