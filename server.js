@@ -34,8 +34,6 @@ app.put("/sess", (req, res) => {
     const body = req.body
     const sessionData = body.data
 
-    console.log(sessionData)
-
     // set session
     req.session.state = sessionData
 
