@@ -7,13 +7,14 @@
 
         <link rel="manifest" href="/public/manifest.json">
         <!-- <link rel="shortcut icon" href="public/favicon.ico"> -->
-        <title>SIMEPLE REACT SSR</title>
+        <title>Drive Drive</title>
     </head>
     <body>
         <noscript>
             You need to enable JavaScript to run this app.
         </noscript>
         <div id="root"><%- body -%></div>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBXJPPeACbrdqR70Gr3sNcinmq4MhpCcqw"></script>
         <script type="text/javascript">
             var preloadedState = <%- preloadedState -%>;
             console.log(preloadedState)
