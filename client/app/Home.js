@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import initMap from './map/initMap'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
+import MarkerBox from './components/MarkerBox'
 import './home.styl'
 
 const displayMarkers = (markers) => {
@@ -21,6 +22,21 @@ const displayMarkers = (markers) => {
 
 }
 
+const displayDirections = (directions) => {
+    return directions.map( (direction, i) => {
+        
+        if(direction == undefined){
+            return ""
+        }
+
+        return(
+            <DirectionsRenderer 
+                directions={direction}
+                key={i} />
+        )
+    })
+}
+
 const Gmap = withGoogleMap(props => (
     <GoogleMap
         ref={props.onMapLoad}
@@ -31,7 +47,7 @@ const Gmap = withGoogleMap(props => (
         onClick={props.onClickMap}
     >
         {displayMarkers(props.markers)}
-        {props.directions && <DirectionsRenderer directions={props.directions} />}
+        {displayDirections(props.directions)}
     </GoogleMap>
 ));
 
@@ -43,50 +59,72 @@ class Home extends Component {
         this.state = {
             isShowGmap : false,
             pos : {lat: 13.7246812, lng: -100.5006702},
+            totalDistance : 0,
             markers : [],
             points : [],
-            directions: null,
-            totalDistance : 0
+            directions: [],
+            selectedMarker: -1,
+            boxNum : 2
         }
 
     }
 
-    handleMapLoad(map){
+    componentWillMount() {
         
     }
 
-    handleMapClick(e){
-        console.log(e)
-        const m = {
-            pos: e.latLng,
-            defaultAnimation: 2,
-            key: Date.now(), // Add a key property for: http://fb.me/react-warning-keys
+    displayBoxes(){
+        const bs = []
+        for(let i=0;i<this.state.boxNum;i++){
+
+            let removeable = false
+            if(this.state.boxNum > 2 && i >= 1){
+                removeable = true
+            }
+
+            bs.push(
+                <MarkerBox
+                    index={i}
+                    point={this.state.points[i]}
+                    key={i}
+                    removeable={removeable}
+                    onSelect={this.onSelectMarkerBox.bind(this)}
+                    onRemove={this.removeMarkerBox.bind(this, i)}
+                />
+            )
         }
-
-        const markers = this.state.markers;
-        markers.push(m)
-
-        // Direction
-        if(markers.length >= 2){
-            const DirectionsService = new google.maps.DirectionsService();
-            this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
-            .then( result => {
-                this.setState({
-                    directions: result,
-                    totalDistance: result.routes[0].legs[0].distance.text
-                })
-            })
-        }
-
-        this.setState({
-            markers
-        })
+        return bs
     }
-
+    
     render() {
         return (
-            <div style={{height: '100vh'}}>
-                Distance : {this.state.totalDistance}
+            <div className="home">
+                <div className="markerbox-container">
+                    {
+                        this.displayBoxes().map( (mk) => {
+                            return mk
+                        })
+                    }
+                    {/* <MarkerBox
+                        index={0}
+                        point={this.state.points[0]}
+                        key={0}
+                        onSelect={this.onSelectMarkerBox.bind(this)}
+                    />
+                    <MarkerBox
+                        index={1}
+                        point={this.state.points[1]}
+                        key={1}
+                        onSelect={this.onSelectMarkerBox.bind(this)}
+                    /> */}
+                    <div className="option-box">
+                        <div className="option-icon">
+                            <a onClick={this.addMarkerBox.bind(this)} role="button" style={{cursor: "pointer"}}>
+                                <img className="icon" src="/public/mats/img/plus-sign-in-a-black-circle.svg"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <div style={{height: "80%", display: this.state.isShowGmap?'block':'block'}}>
                     <Gmap
                         pos={this.state.pos}
@@ -98,12 +136,13 @@ class Home extends Component {
                         directions={this.state.directions}
                     />
                 </div>
+
+                TOTAL : {this.state.totalDistance + " KM"}
             </div>
         );
     }
 
     componentDidMount() {
-
         // Get position
         const promise = new Promise( (resolve, reject) => {
             if (navigator.geolocation) {
@@ -127,30 +166,147 @@ class Home extends Component {
             }
         })
         .then(data => {
-            console.log(data)
             this.setState({pos: data.pos, isShowGmap: true})
         })
         .catch(err => {
             this.setState({pos: this.state.pos, isShowGmap: true})
         })
 
-        // const DirectionsService = new google.maps.DirectionsService();
-        // DirectionsService.route({
-        //     origin: new google.maps.LatLng(13.7071284, 100.4965502),
-        //     destination: new google.maps.LatLng(13.7081284, 100.497552),
-        //     travelMode: google.maps.TravelMode.DRIVING,
-        //     }, (result, status) => {
-        //     if (status === google.maps.DirectionsStatus.OK) {
-        //         console.log(result)
-        //         const totalDistance = result.routes[0].legs[0].distance
-        //         this.setState({
-        //             directions: result,
-        //             totalDistance: totalDistance.text
-        //         });
-        //     } else {
-        //         console.error('error fetching directions ' + result);
-        //     }
-        // });
+    }
+    
+    handleMapLoad(map){
+        
+    }
+
+    handleMapClick(e){
+        
+        if(this.state.selectedMarker >= 0){
+            const m = {
+                pos: e.latLng,
+                defaultAnimation: 2,
+                key: Date.now(),
+            }
+
+            const markers = this.state.markers;
+            markers[this.state.selectedMarker] = m
+            this.setState({
+                markers
+            })
+
+            // Geocoder
+            const geocoder = new google.maps.Geocoder;
+            new Promise( (resolve, reject) => {
+                geocoder.geocode({'location': e.latLng}, function(results, status) {
+                    if(status != google.maps.GeocoderStatus.OK){
+                        return;
+                    }
+
+                    if(results.length == 0){
+                        return;
+                    }
+                    resolve(results)
+                })
+            }).then(results => {
+                const points = this.state.points
+                points[this.state.selectedMarker] = results
+                this.setState({points})
+            })
+            
+            // Direction
+            if(markers.length >= 2){
+                const DirectionsService = new google.maps.DirectionsService();
+                const markers = this.state.markers
+                const directions = this.state.directions
+                
+                if(this.state.selectedMarker - 1 >= 0 && markers[this.state.selectedMarker - 1] != undefined){
+                    this.getDerection(markers[this.state.selectedMarker - 1], markers[this.state.selectedMarker])
+                    .then( result => {
+                        directions[this.state.selectedMarker - 1] = result
+                        const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                        this.setState({
+                            directions,
+                            totalDistance : this.getTotalDistanceData(directions).totalDistance
+                        })
+                    })
+                }
+
+                if(this.state.selectedMarker + 1 < markers.length && markers[this.state.selectedMarker + 1] != undefined){
+                    this.getDerection(markers[this.state.selectedMarker], markers[this.state.selectedMarker + 1])
+                    .then( result => {
+                        directions[this.state.selectedMarker] = result
+                        const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                        this.setState({
+                            directions,
+                            totalDistance : this.getTotalDistanceData(directions).totalDistance
+                        })
+                    })
+                }
+                
+                // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
+                // .then( result => {
+
+                //     const directions = this.state.directions
+                //     directions.push(result)
+
+                //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
+
+                //     this.setState({
+                //         directions,
+                //         totalDistance: this.state.totalDistance + distance
+                //     })
+                // })
+            }
+        }
+    }
+
+    onSelectMarkerBox(e){
+        this.setState({
+            selectedMarker: e
+        })
+    }
+
+    addMarkerBox(e){
+        this.setState({
+            boxNum : this.state.boxNum + 1
+        })
+    }
+
+    removeMarkerBox(index){
+        const markers = this.state.markers
+        const points = this.state.points
+        let selectedMarker = 0
+
+        // Calculate directions
+        const directions = this.state.directions
+        if(index == 0){
+            directions.splice(0, 1)
+        }else if(index == markers.length - 1){
+            directions.splice(directions.length - 1, 1)
+            selectedMarker = this.state.selectedMarker - 1
+        }else{
+            this.getDerection(markers[index - 1], markers[index + 1])
+            .then(result => {
+                directions[index - 1] = result
+                directions.splice(index, 1) 
+                this.setState({
+                    directions,
+                    totalDistance : this.getTotalDistanceData(directions).totalDistance
+                })
+            })
+            selectedMarker = this.state.selectedMarker - 1
+        }
+
+        // Remove point
+        markers.splice(index, 1)
+        points.splice(index, 1)
+
+        // Set state
+        this.setState({
+            markers,
+            points,
+            boxNum: this.state.boxNum - 1,
+            selectedMarker
+        })
     }
 
     getDerection(start, end){
@@ -162,12 +318,7 @@ class Home extends Component {
                 travelMode: google.maps.TravelMode.DRIVING,
                 }, (result, status) => {
                 if (status === google.maps.DirectionsStatus.OK) {
-                    console.log(result)
                     const totalDistance = result.routes[0].legs[0].distance
-                    // this.setState({
-                    //     directions: result,
-                    //     totalDistance: totalDistance.text
-                    // });
                     resolve(result)
                 } else {
                     console.error('error fetching directions ' + result);
@@ -175,6 +326,22 @@ class Home extends Component {
                 }
             });
         })
+    }
+
+    getTotalDistanceData(directions){
+        const data ={
+            totalDistance: 0.0
+        }
+        for(let i=0;i<directions.length;i++){
+            if(directions[i] != undefined){
+                const distance = parseFloat(directions[i].routes[0].legs[0].distance.text)
+                data.totalDistance += distance
+            }else{
+                console.log("wrong dis")
+            }
+        }
+
+        return data
     }
     
 }

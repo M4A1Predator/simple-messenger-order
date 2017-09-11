@@ -219,7 +219,7 @@ var _Home = __webpack_require__(9);
 
 var _Home2 = _interopRequireDefault(_Home);
 
-var _About = __webpack_require__(15);
+var _About = __webpack_require__(14);
 
 var _About2 = _interopRequireDefault(_About);
 
@@ -283,6 +283,10 @@ var _initMap2 = _interopRequireDefault(_initMap);
 
 var _reactGoogleMaps = __webpack_require__(11);
 
+var _MarkerBox = __webpack_require__(15);
+
+var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
+
 __webpack_require__(12);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -306,6 +310,19 @@ var displayMarkers = function displayMarkers(markers) {
     });
 };
 
+var displayDirections = function displayDirections(directions) {
+    return directions.map(function (direction, i) {
+
+        if (direction == undefined) {
+            return "";
+        }
+
+        return _react2.default.createElement(_reactGoogleMaps.DirectionsRenderer, {
+            directions: direction,
+            key: i });
+    });
+};
+
 var Gmap = (0, _reactGoogleMaps.withGoogleMap)(function (props) {
     return _react2.default.createElement(
         _reactGoogleMaps.GoogleMap,
@@ -318,7 +335,7 @@ var Gmap = (0, _reactGoogleMaps.withGoogleMap)(function (props) {
             onClick: props.onClickMap
         },
         displayMarkers(props.markers),
-        props.directions && _react2.default.createElement(_reactGoogleMaps.DirectionsRenderer, { directions: props.directions })
+        displayDirections(props.directions)
     );
 });
 
@@ -333,56 +350,68 @@ var Home = function (_Component) {
         _this.state = {
             isShowGmap: false,
             pos: { lat: 13.7246812, lng: -100.5006702 },
+            totalDistance: 0,
             markers: [],
             points: [],
-            directions: null,
-            totalDistance: 0
+            directions: [],
+            selectedMarker: -1,
+            boxNum: 2
         };
 
         return _this;
     }
 
     _createClass(Home, [{
-        key: 'handleMapLoad',
-        value: function handleMapLoad(map) {}
+        key: 'componentWillMount',
+        value: function componentWillMount() {}
     }, {
-        key: 'handleMapClick',
-        value: function handleMapClick(e) {
-            var _this2 = this;
+        key: 'displayBoxes',
+        value: function displayBoxes() {
+            var bs = [];
+            for (var i = 0; i < this.state.boxNum; i++) {
 
-            console.log(e);
-            var m = {
-                pos: e.latLng,
-                defaultAnimation: 2,
-                key: Date.now() // Add a key property for: http://fb.me/react-warning-keys
-            };
+                var removeable = false;
+                if (this.state.boxNum > 2 && i >= 1) {
+                    removeable = true;
+                }
 
-            var markers = this.state.markers;
-            markers.push(m);
-
-            // Direction
-            if (markers.length >= 2) {
-                var DirectionsService = new google.maps.DirectionsService();
-                this.getDerection(markers[markers.length - 2], markers[markers.length - 1]).then(function (result) {
-                    _this2.setState({
-                        directions: result,
-                        totalDistance: result.routes[0].legs[0].distance.text
-                    });
-                });
+                bs.push(_react2.default.createElement(_MarkerBox2.default, {
+                    index: i,
+                    point: this.state.points[i],
+                    key: i,
+                    removeable: removeable,
+                    onSelect: this.onSelectMarkerBox.bind(this),
+                    onRemove: this.removeMarkerBox.bind(this, i)
+                }));
             }
-
-            this.setState({
-                markers: markers
-            });
+            return bs;
         }
     }, {
         key: 'render',
         value: function render() {
             return _react2.default.createElement(
                 'div',
-                { style: { height: '100vh' } },
-                'Distance : ',
-                this.state.totalDistance,
+                { className: 'home' },
+                _react2.default.createElement(
+                    'div',
+                    { className: 'markerbox-container' },
+                    this.displayBoxes().map(function (mk) {
+                        return mk;
+                    }),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'option-box' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'option-icon' },
+                            _react2.default.createElement(
+                                'a',
+                                { onClick: this.addMarkerBox.bind(this), role: 'button', style: { cursor: "pointer" } },
+                                _react2.default.createElement('img', { className: 'icon', src: '/public/mats/img/plus-sign-in-a-black-circle.svg' })
+                            )
+                        )
+                    )
+                ),
                 _react2.default.createElement(
                     'div',
                     { style: { height: "80%", display: this.state.isShowGmap ? 'block' : 'block' } },
@@ -395,13 +424,15 @@ var Home = function (_Component) {
                         markers: this.state.markers,
                         directions: this.state.directions
                     })
-                )
+                ),
+                'TOTAL : ',
+                this.state.totalDistance + " KM"
             );
         }
     }, {
         key: 'componentDidMount',
         value: function componentDidMount() {
-            var _this3 = this;
+            var _this2 = this;
 
             // Get position
             var promise = new Promise(function (resolve, reject) {
@@ -425,29 +456,148 @@ var Home = function (_Component) {
                     reject({});
                 }
             }).then(function (data) {
-                console.log(data);
-                _this3.setState({ pos: data.pos, isShowGmap: true });
+                _this2.setState({ pos: data.pos, isShowGmap: true });
             }).catch(function (err) {
-                _this3.setState({ pos: _this3.state.pos, isShowGmap: true });
+                _this2.setState({ pos: _this2.state.pos, isShowGmap: true });
             });
+        }
+    }, {
+        key: 'handleMapLoad',
+        value: function handleMapLoad(map) {}
+    }, {
+        key: 'handleMapClick',
+        value: function handleMapClick(e) {
+            var _this3 = this;
 
-            // const DirectionsService = new google.maps.DirectionsService();
-            // DirectionsService.route({
-            //     origin: new google.maps.LatLng(13.7071284, 100.4965502),
-            //     destination: new google.maps.LatLng(13.7081284, 100.497552),
-            //     travelMode: google.maps.TravelMode.DRIVING,
-            //     }, (result, status) => {
-            //     if (status === google.maps.DirectionsStatus.OK) {
-            //         console.log(result)
-            //         const totalDistance = result.routes[0].legs[0].distance
-            //         this.setState({
-            //             directions: result,
-            //             totalDistance: totalDistance.text
-            //         });
-            //     } else {
-            //         console.error('error fetching directions ' + result);
-            //     }
-            // });
+            if (this.state.selectedMarker >= 0) {
+                var m = {
+                    pos: e.latLng,
+                    defaultAnimation: 2,
+                    key: Date.now()
+                };
+
+                var markers = this.state.markers;
+                markers[this.state.selectedMarker] = m;
+                this.setState({
+                    markers: markers
+                });
+
+                // Geocoder
+                var geocoder = new google.maps.Geocoder();
+                new Promise(function (resolve, reject) {
+                    geocoder.geocode({ 'location': e.latLng }, function (results, status) {
+                        if (status != google.maps.GeocoderStatus.OK) {
+                            return;
+                        }
+
+                        if (results.length == 0) {
+                            return;
+                        }
+                        resolve(results);
+                    });
+                }).then(function (results) {
+                    var points = _this3.state.points;
+                    points[_this3.state.selectedMarker] = results;
+                    _this3.setState({ points: points });
+                });
+
+                // Direction
+                if (markers.length >= 2) {
+                    var DirectionsService = new google.maps.DirectionsService();
+                    var _markers = this.state.markers;
+                    var directions = this.state.directions;
+
+                    if (this.state.selectedMarker - 1 >= 0 && _markers[this.state.selectedMarker - 1] != undefined) {
+                        this.getDerection(_markers[this.state.selectedMarker - 1], _markers[this.state.selectedMarker]).then(function (result) {
+                            directions[_this3.state.selectedMarker - 1] = result;
+                            var distance = parseFloat(result.routes[0].legs[0].distance.text);
+                            _this3.setState({
+                                directions: directions,
+                                totalDistance: _this3.getTotalDistanceData(directions).totalDistance
+                            });
+                        });
+                    }
+
+                    if (this.state.selectedMarker + 1 < _markers.length && _markers[this.state.selectedMarker + 1] != undefined) {
+                        this.getDerection(_markers[this.state.selectedMarker], _markers[this.state.selectedMarker + 1]).then(function (result) {
+                            directions[_this3.state.selectedMarker] = result;
+                            var distance = parseFloat(result.routes[0].legs[0].distance.text);
+                            _this3.setState({
+                                directions: directions,
+                                totalDistance: _this3.getTotalDistanceData(directions).totalDistance
+                            });
+                        });
+                    }
+
+                    // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
+                    // .then( result => {
+
+                    //     const directions = this.state.directions
+                    //     directions.push(result)
+
+                    //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
+
+                    //     this.setState({
+                    //         directions,
+                    //         totalDistance: this.state.totalDistance + distance
+                    //     })
+                    // })
+                }
+            }
+        }
+    }, {
+        key: 'onSelectMarkerBox',
+        value: function onSelectMarkerBox(e) {
+            this.setState({
+                selectedMarker: e
+            });
+        }
+    }, {
+        key: 'addMarkerBox',
+        value: function addMarkerBox(e) {
+            this.setState({
+                boxNum: this.state.boxNum + 1
+            });
+        }
+    }, {
+        key: 'removeMarkerBox',
+        value: function removeMarkerBox(index) {
+            var _this4 = this;
+
+            var markers = this.state.markers;
+            var points = this.state.points;
+            var selectedMarker = 0;
+
+            // Calculate directions
+            var directions = this.state.directions;
+            if (index == 0) {
+                directions.splice(0, 1);
+            } else if (index == markers.length - 1) {
+                directions.splice(directions.length - 1, 1);
+                selectedMarker = this.state.selectedMarker - 1;
+            } else {
+                this.getDerection(markers[index - 1], markers[index + 1]).then(function (result) {
+                    directions[index - 1] = result;
+                    directions.splice(index, 1);
+                    _this4.setState({
+                        directions: directions,
+                        totalDistance: _this4.getTotalDistanceData(directions).totalDistance
+                    });
+                });
+                selectedMarker = this.state.selectedMarker - 1;
+            }
+
+            // Remove point
+            markers.splice(index, 1);
+            points.splice(index, 1);
+
+            // Set state
+            this.setState({
+                markers: markers,
+                points: points,
+                boxNum: this.state.boxNum - 1,
+                selectedMarker: selectedMarker
+            });
         }
     }, {
         key: 'getDerection',
@@ -460,12 +610,7 @@ var Home = function (_Component) {
                     travelMode: google.maps.TravelMode.DRIVING
                 }, function (result, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
-                        console.log(result);
                         var totalDistance = result.routes[0].legs[0].distance;
-                        // this.setState({
-                        //     directions: result,
-                        //     totalDistance: totalDistance.text
-                        // });
                         resolve(result);
                     } else {
                         console.error('error fetching directions ' + result);
@@ -473,6 +618,23 @@ var Home = function (_Component) {
                     }
                 });
             });
+        }
+    }, {
+        key: 'getTotalDistanceData',
+        value: function getTotalDistanceData(directions) {
+            var data = {
+                totalDistance: 0.0
+            };
+            for (var i = 0; i < directions.length; i++) {
+                if (directions[i] != undefined) {
+                    var distance = parseFloat(directions[i].routes[0].legs[0].distance.text);
+                    data.totalDistance += distance;
+                } else {
+                    console.log("wrong dis");
+                }
+            }
+
+            return data;
         }
     }]);
 
@@ -528,7 +690,7 @@ exports = module.exports = __webpack_require__(13)(undefined);
 
 
 // module
-exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n", ""]);
+exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n.home {\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  z-index: 10;\n  width: 100%;\n  max-width: 421px;\n  height: 90px;\n  overflow-y: scroll;\n}\n.home .markerbox-container .option-box .option-icon {\n  float: right;\n  margin: 5px 25px 0 0;\n}\n.home .markerbox-container .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n", ""]);
 
 // exports
 
@@ -616,8 +778,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 14 */,
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -665,6 +826,162 @@ var About = function (_Component) {
 }(_react.Component);
 
 exports.default = About;
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(16);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+__webpack_require__(17);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var MarkerBox = function (_Component) {
+    _inherits(MarkerBox, _Component);
+
+    function MarkerBox(props) {
+        _classCallCheck(this, MarkerBox);
+
+        var _this = _possibleConstructorReturn(this, (MarkerBox.__proto__ || Object.getPrototypeOf(MarkerBox)).call(this, props));
+
+        _this.state = {
+            placeName: 'test'
+        };
+        return _this;
+    }
+
+    _createClass(MarkerBox, [{
+        key: 'componentWillMount',
+        value: function componentWillMount() {
+            var placeName = this.getPlaceName(this.props.point);
+            this.setState({
+                placeName: placeName
+            });
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {}
+    }, {
+        key: 'render',
+        value: function render() {
+            var placeName = this.getPlaceName(this.props.point);
+            var removeComponent = { component: "" };
+
+            if (this.props.removeable === true) {
+                removeComponent.component = _react2.default.createElement(
+                    'div',
+                    { className: 'remove-icon' },
+                    _react2.default.createElement(
+                        'a',
+                        { onClick: this.props.onRemove, role: 'button', style: { cursor: "pointer" } },
+                        _react2.default.createElement('img', { className: 'icon', src: '/public/mats/img/minus-sign-inside-a-black-circle.svg' })
+                    )
+                );
+            }
+
+            return _react2.default.createElement(
+                'div',
+                { className: 'marker-box' },
+                _react2.default.createElement(
+                    'div',
+                    { className: 'marker-container' },
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'marker-icon' },
+                        _react2.default.createElement('img', { className: 'icon', src: '/public/mats/img/map-marker.svg' })
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'input-box' },
+                        _react2.default.createElement('input', {
+                            type: 'text',
+                            value: placeName || '',
+                            onFocus: this.onSelect.bind(this),
+                            onChange: this.handleChanged.bind(this, 'placeName')
+                        })
+                    ),
+                    removeComponent.component
+                )
+            );
+        }
+    }, {
+        key: 'handleChanged',
+        value: function handleChanged(n, e) {
+            this.setState(_defineProperty({}, n, e.target.value));
+        }
+    }, {
+        key: 'onSelect',
+        value: function onSelect() {
+            this.props.onSelect(this.props.index);
+        }
+    }, {
+        key: 'getPlaceName',
+        value: function getPlaceName(results) {
+            if (results == undefined || results.length == 0) {
+                return '';
+            }
+
+            return results[0].formatted_address;
+        }
+    }]);
+
+    return MarkerBox;
+}(_react.Component);
+
+MarkerBox.propTypes = {
+    index: _propTypes2.default.number.isRequired,
+    placeName: _propTypes2.default.string,
+    point: _propTypes2.default.any
+};
+MarkerBox.defaultProps = {
+    removeable: false
+};
+
+exports.default = MarkerBox;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+module.exports = require("prop-types");
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(13)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container .marker-icon {\n  display: inline-block;\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  display: inline-block;\n  width: 90%;\n}\n.marker-box .marker-container .input-box input {\n  height: 20px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  display: inline-block;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n  margin: 10px 0 0 -25px;\n}\n", ""]);
+
+// exports
+
 
 /***/ })
 /******/ ]);
