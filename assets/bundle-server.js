@@ -61,7 +61,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "/assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -90,6 +90,88 @@ module.exports = require("redux");
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -104,7 +186,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _server = __webpack_require__(5);
+var _server = __webpack_require__(6);
 
 var _server2 = _interopRequireDefault(_server);
 
@@ -112,17 +194,17 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(1);
 
-var _reducers = __webpack_require__(6);
+var _reducers = __webpack_require__(7);
 
 var _reducers2 = _interopRequireDefault(_reducers);
 
 var _redux = __webpack_require__(3);
 
-var _reduxThunk = __webpack_require__(7);
+var _reduxThunk = __webpack_require__(8);
 
 var _reduxThunk2 = _interopRequireDefault(_reduxThunk);
 
-var _App = __webpack_require__(8);
+var _App = __webpack_require__(9);
 
 var _App2 = _interopRequireDefault(_App);
 
@@ -158,13 +240,13 @@ function render(req, res) {
 }
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-dom/server");
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -176,28 +258,32 @@ Object.defineProperty(exports, "__esModule", {
 
 var _redux = __webpack_require__(3);
 
-var reducers = (0, _redux.combineReducers)({
-    webData: function webData() {
-        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        var action = arguments[1];
+var _appReducers = __webpack_require__(18);
 
-        if (action.type === 'ADD_NUM') {
-            state = action.data;
-        }
-        return state;
-    }
+var _appReducers2 = _interopRequireDefault(_appReducers);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var reducers = (0, _redux.combineReducers)({
+    // webData: (state={}, action) => {
+    //     if(action.type === 'ADD_NUM'){
+    //         state = action.data
+    //     }
+    //     return state
+    // }
+    orderData: _appReducers2.default
 });
 
 exports.default = reducers;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("redux-thunk");
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -215,13 +301,13 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRouterDom = __webpack_require__(1);
 
-var _Home = __webpack_require__(9);
+var _Home = __webpack_require__(10);
 
 var _Home2 = _interopRequireDefault(_Home);
 
-var _About = __webpack_require__(14);
+var _OrderDetail = __webpack_require__(19);
 
-var _About2 = _interopRequireDefault(_About);
+var _OrderDetail2 = _interopRequireDefault(_OrderDetail);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -246,7 +332,8 @@ var App = function (_Component) {
             return _react2.default.createElement(
                 'div',
                 null,
-                _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/', component: _Home2.default })
+                _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/', component: _Home2.default }),
+                _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/orderDetail', component: _OrderDetail2.default })
             );
         }
     }]);
@@ -257,7 +344,7 @@ var App = function (_Component) {
 exports.default = App;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -277,17 +364,17 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(1);
 
-var _initMap = __webpack_require__(10);
+var _initMap = __webpack_require__(11);
 
 var _initMap2 = _interopRequireDefault(_initMap);
 
-var _reactGoogleMaps = __webpack_require__(11);
+var _reactGoogleMaps = __webpack_require__(12);
 
-var _MarkerBox = __webpack_require__(15);
+var _MarkerBox = __webpack_require__(13);
 
 var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
 
-__webpack_require__(12);
+__webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -319,6 +406,10 @@ var displayDirections = function displayDirections(directions) {
 
         return _react2.default.createElement(_reactGoogleMaps.DirectionsRenderer, {
             directions: direction,
+            options: {
+                preserveViewport: true,
+                suppressMarkers: true
+            },
             key: i });
     });
 };
@@ -363,7 +454,24 @@ var Home = function (_Component) {
 
     _createClass(Home, [{
         key: 'componentWillMount',
-        value: function componentWillMount() {}
+        value: function componentWillMount() {
+            if (this.props.orderData != null) {
+                var ms = [];
+                var ps = [];
+                this.props.orderData.dests.forEach(function (dest) {
+                    ms.push(dest.marker);
+                    ps.push(dest.point);
+                });
+
+                this.setState({
+                    boxNum: this.props.orderData.dests.length,
+                    markers: ms,
+                    points: ps,
+                    directions: this.props.orderData.directions,
+                    totalDistance: this.props.orderData.totalDistance
+                });
+            }
+        }
     }, {
         key: 'displayBoxes',
         value: function displayBoxes() {
@@ -375,8 +483,14 @@ var Home = function (_Component) {
                     removeable = true;
                 }
 
+                var isSelected = false;
+                if (this.state.selectedMarker === i) {
+                    isSelected = true;
+                }
+
                 bs.push(_react2.default.createElement(_MarkerBox2.default, {
                     index: i,
+                    isSelected: isSelected,
                     point: this.state.points[i],
                     key: i,
                     removeable: removeable,
@@ -407,14 +521,14 @@ var Home = function (_Component) {
                             _react2.default.createElement(
                                 'a',
                                 { onClick: this.addMarkerBox.bind(this), role: 'button', style: { cursor: "pointer" } },
-                                _react2.default.createElement('img', { className: 'icon', src: '/public/mats/img/plus-sign-in-a-black-circle.svg' })
+                                _react2.default.createElement('img', { className: 'icon', width: '20px', height: '20px', src: '/public/mats/img/plus-sign-in-a-black-circle.svg' })
                             )
                         )
                     )
                 ),
                 _react2.default.createElement(
                     'div',
-                    { style: { height: "80%", display: this.state.isShowGmap ? 'block' : 'block' } },
+                    { className: 'gmap', style: { height: "80%", display: this.state.isShowGmap ? 'block' : 'block' } },
                     _react2.default.createElement(Gmap, {
                         pos: this.state.pos,
                         onMapLoad: this.handleMapLoad.bind(this),
@@ -425,8 +539,25 @@ var Home = function (_Component) {
                         directions: this.state.directions
                     })
                 ),
-                'TOTAL : ',
-                this.state.totalDistance + " KM"
+                _react2.default.createElement(
+                    'div',
+                    { className: 'total-box' },
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'total-text' },
+                        'Total ',
+                        this.state.totalDistance + " KM"
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'btn-container' },
+                        _react2.default.createElement(
+                            'button',
+                            { onClick: this.order.bind(this) },
+                            'Next'
+                        )
+                    )
+                )
             );
         }
     }, {
@@ -556,7 +687,8 @@ var Home = function (_Component) {
         key: 'addMarkerBox',
         value: function addMarkerBox(e) {
             this.setState({
-                boxNum: this.state.boxNum + 1
+                boxNum: this.state.boxNum + 1,
+                selectedMarker: this.state.selectedMarker + 1
             });
         }
     }, {
@@ -608,6 +740,8 @@ var Home = function (_Component) {
                     origin: start.pos,
                     destination: end.pos,
                     travelMode: google.maps.TravelMode.DRIVING
+                    // preserveViewport: true,
+                    // suppressMarkers: true
                 }, function (result, status) {
                     if (status === google.maps.DirectionsStatus.OK) {
                         var totalDistance = result.routes[0].legs[0].distance;
@@ -636,6 +770,42 @@ var Home = function (_Component) {
 
             return data;
         }
+    }, {
+        key: 'order',
+        value: function order(e) {
+            // Get data
+            var points = this.state.points;
+            var markers = this.state.markers;
+
+            var dests = [];
+            for (var i = 0; i < markers.length; i++) {
+
+                var placeName = points[i][0].formatted_address;
+                if (placeName == undefined) {
+                    placeName = markers[i].getPosition().lat() + " " + markers[i].getPosition().lng();
+                }
+
+                var dest = {
+                    marker: markers[i],
+                    point: points[i],
+                    placeName: placeName
+                };
+                dests.push(dest);
+            }
+
+            if (dests.length < 2) {
+                return;
+            }
+
+            var data = {
+                dests: dests,
+                directions: this.state.directions,
+                totalDistance: this.state.totalDistance
+
+                // Redirect
+            };this.props.order(data);
+            this.props.history.push('/orderDetail');
+        }
     }]);
 
     return Home;
@@ -643,18 +813,26 @@ var Home = function (_Component) {
 
 var mapStateToProps = function mapStateToProps(state) {
     return {
-        webData: state.webData
+        orderData: state.orderData
     };
 };
 
-var mapDispatchToProps = function mapDispatchToProps(dispatch, prev) {
-    return {};
+var mapDispatchToProps = function mapDispatchToProps(dispatch, prevState) {
+    return {
+        order: function order(orderData) {
+            var action = {
+                type: 'ORDER',
+                data: orderData
+            };
+            dispatch(action);
+        }
+    };
 };
 
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Home);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -676,109 +854,13 @@ var initMap = function initMap() {
 exports.default = initMap;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-google-maps");
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(13)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n.home {\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  z-index: 10;\n  width: 100%;\n  max-width: 421px;\n  height: 90px;\n  overflow-y: scroll;\n}\n.home .markerbox-container .option-box .option-icon {\n  float: right;\n  margin: 5px 25px 0 0;\n}\n.home .markerbox-container .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
 /* 13 */
-/***/ (function(module, exports) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-// css base code, injected by the css-loader
-module.exports = function(useSourceMap) {
-	var list = [];
-
-	// return the list of modules as css string
-	list.toString = function toString() {
-		return this.map(function (item) {
-			var content = cssWithMappingToString(item, useSourceMap);
-			if(item[2]) {
-				return "@media " + item[2] + "{" + content + "}";
-			} else {
-				return content;
-			}
-		}).join("");
-	};
-
-	// import a list of modules into the list
-	list.i = function(modules, mediaQuery) {
-		if(typeof modules === "string")
-			modules = [[null, modules, ""]];
-		var alreadyImportedModules = {};
-		for(var i = 0; i < this.length; i++) {
-			var id = this[i][0];
-			if(typeof id === "number")
-				alreadyImportedModules[id] = true;
-		}
-		for(i = 0; i < modules.length; i++) {
-			var item = modules[i];
-			// skip already imported module
-			// this implementation is not 100% perfect for weird media query combinations
-			//  when a module is imported multiple times with different media queries.
-			//  I hope this will never occur (Hey this way we have smaller bundles)
-			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-				if(mediaQuery && !item[2]) {
-					item[2] = mediaQuery;
-				} else if(mediaQuery) {
-					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-				}
-				list.push(item);
-			}
-		}
-	};
-	return list;
-};
-
-function cssWithMappingToString(item, useSourceMap) {
-	var content = item[1] || '';
-	var cssMapping = item[3];
-	if (!cssMapping) {
-		return content;
-	}
-
-	if (useSourceMap && typeof btoa === 'function') {
-		var sourceMapping = toComment(cssMapping);
-		var sourceURLs = cssMapping.sources.map(function (source) {
-			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
-		});
-
-		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
-	}
-
-	return [content].join('\n');
-}
-
-// Adapted from convert-source-map (MIT)
-function toComment(sourceMap) {
-	// eslint-disable-next-line no-undef
-	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
-	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
-
-	return '/*# ' + data + ' */';
-}
-
-
-/***/ }),
-/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -794,61 +876,11 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var About = function (_Component) {
-    _inherits(About, _Component);
-
-    function About() {
-        _classCallCheck(this, About);
-
-        return _possibleConstructorReturn(this, (About.__proto__ || Object.getPrototypeOf(About)).apply(this, arguments));
-    }
-
-    _createClass(About, [{
-        key: 'render',
-        value: function render() {
-            return _react2.default.createElement(
-                'div',
-                null,
-                'About Page'
-            );
-        }
-    }]);
-
-    return About;
-}(_react.Component);
-
-exports.default = About;
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(0);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _propTypes = __webpack_require__(16);
+var _propTypes = __webpack_require__(14);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-__webpack_require__(17);
+__webpack_require__(15);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -884,7 +916,12 @@ var MarkerBox = function (_Component) {
         }
     }, {
         key: 'componentWillReceiveProps',
-        value: function componentWillReceiveProps(nextProps) {}
+        value: function componentWillReceiveProps(nextProps) {
+            var placeName = this.getPlaceName(this.props.point);
+            this.setState({
+                placeName: placeName
+            });
+        }
     }, {
         key: 'render',
         value: function render() {
@@ -898,9 +935,14 @@ var MarkerBox = function (_Component) {
                     _react2.default.createElement(
                         'a',
                         { onClick: this.props.onRemove, role: 'button', style: { cursor: "pointer" } },
-                        _react2.default.createElement('img', { className: 'icon', src: '/public/mats/img/minus-sign-inside-a-black-circle.svg' })
+                        _react2.default.createElement('img', { className: 'icon', width: '20px', height: '20px', src: '/public/mats/img/minus-sign-inside-a-black-circle.svg' })
                     )
                 );
+            }
+
+            var intStyle = {};
+            if (this.props.isSelected === true) {
+                intStyle.backgroundColor = "#69ccf0";
             }
 
             return _react2.default.createElement(
@@ -912,14 +954,16 @@ var MarkerBox = function (_Component) {
                     _react2.default.createElement(
                         'div',
                         { className: 'marker-icon' },
-                        _react2.default.createElement('img', { className: 'icon', src: '/public/mats/img/map-marker.svg' })
+                        _react2.default.createElement('img', { className: 'icon', width: '20px', height: '20px', src: '/public/mats/img/map-marker.svg' })
                     ),
                     _react2.default.createElement(
                         'div',
                         { className: 'input-box' },
                         _react2.default.createElement('input', {
+                            style: intStyle,
                             type: 'text',
-                            value: placeName || '',
+
+                            value: this.state.placeName,
                             onFocus: this.onSelect.bind(this),
                             onChange: this.handleChanged.bind(this, 'placeName')
                         })
@@ -958,27 +1002,627 @@ MarkerBox.propTypes = {
     point: _propTypes2.default.any
 };
 MarkerBox.defaultProps = {
-    removeable: false
+    removeable: false,
+    isSelected: false
 };
 
 exports.default = MarkerBox;
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("prop-types");
 
 /***/ }),
-/* 17 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(13)(undefined);
+exports = module.exports = __webpack_require__(4)(undefined);
 // imports
 
 
 // module
-exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container .marker-icon {\n  display: inline-block;\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  display: inline-block;\n  width: 90%;\n}\n.marker-box .marker-container .input-box input {\n  height: 20px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  display: inline-block;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n  margin: 10px 0 0 -25px;\n}\n", ""]);
+exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: 90%;\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(4)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n.home {\n  width: 100%;\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  position: absolute;\n  z-index: 10;\n  width: 100%;\n  max-width: 421px;\n  height: 110px;\n  overflow-y: scroll;\n}\n.home .markerbox-container .option-box .option-icon {\n  float: right;\n  margin: 5px 25px 0 0;\n}\n.home .markerbox-container .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n.home .total-box {\n  display: flex;\n  align-items: center;\n}\n.home .total-box .total-text {\n  margin: 0 15px 0 0;\n  font-size: 20px;\n}\n.home .total-box .btn-container {\n  margin: 0 0 0 0;\n}\n.home .total-box .btn-container button {\n  width: 100px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #fff solid;\n  border-radius: 3px;\n}\n.home .gmap {\n  margin: 95px 0 0 0;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 17 */,
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var appReducers = function appReducers() {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var action = arguments[1];
+
+
+    switch (action.type) {
+        case 'ORDER':
+            state = action.data;
+            break;
+    }
+
+    return state;
+};
+exports.default = appReducers;
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRedux = __webpack_require__(2);
+
+var _DestinationBox = __webpack_require__(21);
+
+var _DestinationBox2 = _interopRequireDefault(_DestinationBox);
+
+var _OptionPopUp = __webpack_require__(23);
+
+var _OptionPopUp2 = _interopRequireDefault(_OptionPopUp);
+
+__webpack_require__(20);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var OrderDetail = function (_Component) {
+    _inherits(OrderDetail, _Component);
+
+    function OrderDetail(props) {
+        _classCallCheck(this, OrderDetail);
+
+        var _this = _possibleConstructorReturn(this, (OrderDetail.__proto__ || Object.getPrototypeOf(OrderDetail)).call(this, props));
+
+        _this.state = {
+            isShowPopUp: false,
+            services: [{
+                isSelect: false,
+                price: 50,
+                imgSrc: '/public/mats/img/money.svg'
+            }, {
+                isSelect: false,
+                price: 100,
+                imgSrc: '/public/mats/img/refresh-button.svg'
+            }, {
+                isSelect: false,
+                price: 200,
+                imgSrc: '/public/mats/img/closed-cardboard-box.svg'
+            }],
+            fee: 0.0
+        };
+        return _this;
+    }
+
+    _createClass(OrderDetail, [{
+        key: 'componentWillMount',
+        value: function componentWillMount() {
+            this.setState({ fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0, this.state.services) });
+        }
+    }, {
+        key: 'displayDests',
+        value: function displayDests(dests) {
+            return dests.map(function (dest, i) {
+                return _react2.default.createElement(_DestinationBox2.default, {
+                    dest: dest,
+                    key: i
+                });
+            });
+        }
+    }, {
+        key: 'displayServiceImg',
+        value: function displayServiceImg(services) {
+            return services.map(function (s, i) {
+                if (s.isSelect === false) {
+                    return '';
+                }
+
+                return _react2.default.createElement(
+                    'div',
+                    { className: 'option-icon', key: i },
+                    _react2.default.createElement('img', { src: s.imgSrc })
+                );
+            });
+        }
+    }, {
+        key: 'getFee',
+        value: function getFee(totalDistance, services) {
+            var fee = 0.0;
+            var df = totalDistance * 50;
+
+            services.forEach(function (s) {
+                if (s.isSelect === true) {
+                    fee += s.price;
+                }
+            });
+
+            fee += df;
+            return fee;
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            return _react2.default.createElement(
+                'div',
+                { className: 'container order-detail' },
+                _react2.default.createElement(
+                    'div',
+                    { className: 'destination-container' },
+                    this.props.orderData && this.displayDests(this.props.orderData.dests)
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'option-box' },
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'head' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'head-text' },
+                            'Extra services'
+                        ),
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'icon' },
+                            _react2.default.createElement(
+                                'a',
+                                { onClick: this.showOptionPopUp.bind(this) },
+                                _react2.default.createElement('img', { width: '20px', height: '20px', src: '/public/mats/img/plus-sign-in-a-black-circle.svg' })
+                            )
+                        )
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'selected-option-box' },
+                        this.displayServiceImg(this.state.services)
+                    )
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'detail-box' },
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'text-container' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'head-text' },
+                            'Total Distance'
+                        ),
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'sum' },
+                            this.props.orderData && this.props.orderData.totalDistance || 0.0,
+                            ' KM'
+                        )
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'text-container' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'head-text' },
+                            'Fee'
+                        ),
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'sum' },
+                            this.state.fee,
+                            ' THB'
+                        )
+                    )
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'button-box' },
+                    _react2.default.createElement(
+                        'button',
+                        { onClick: this.backToMap.bind(this), className: 'back-btn' },
+                        'Back'
+                    ),
+                    _react2.default.createElement(
+                        'button',
+                        { className: 'confirm-btn' },
+                        'Confirm'
+                    )
+                ),
+                _react2.default.createElement(_OptionPopUp2.default, { onConfirm: this.onConfirmExtra.bind(this), isShow: this.state.isShowPopUp })
+            );
+        }
+    }, {
+        key: 'showOptionPopUp',
+        value: function showOptionPopUp(e) {
+            this.setState({
+                isShowPopUp: true
+            });
+        }
+    }, {
+        key: 'onConfirmExtra',
+        value: function onConfirmExtra(options) {
+            var services = this.state.services;
+            for (var i = 0; i < services.length; i++) {
+                services[i].isSelect = options[i];
+            }
+            this.setState({
+                services: services,
+                isShowPopUp: false,
+                fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0, services)
+            });
+        }
+    }, {
+        key: 'backToMap',
+        value: function backToMap(e) {
+            this.props.history.goBack();
+        }
+    }]);
+
+    return OrderDetail;
+}(_react.Component);
+
+var mapStateToProps = function mapStateToProps(state) {
+    return {
+        orderData: state.orderData
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps)(OrderDetail);
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(4)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".order-detail {\n  width: 100%;\n}\n.container {\n  display: table;\n}\n@media (min-width: 960px) {\n  .container {\n    width: 960px;\n  }\n}\n.container .destination-container {\n  padding: 5px 5px;\n}\n.container .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.container .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.container .option-box .head .icon {\n  cursor: pointer;\n}\n.container .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.container .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.container .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.container .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.container .detail-box {\n  margin: 50px 0 0 0;\n}\n.container .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.container .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.container .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.container .button-box {\n  text-align: center;\n}\n.container .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.container .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(14);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+__webpack_require__(22);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var DestinationBox = function (_Component) {
+    _inherits(DestinationBox, _Component);
+
+    function DestinationBox(props) {
+        _classCallCheck(this, DestinationBox);
+
+        return _possibleConstructorReturn(this, (DestinationBox.__proto__ || Object.getPrototypeOf(DestinationBox)).call(this, props));
+    }
+
+    _createClass(DestinationBox, [{
+        key: 'render',
+        value: function render() {
+            return _react2.default.createElement(
+                'div',
+                { className: 'destination-box' },
+                _react2.default.createElement(
+                    'div',
+                    { className: 'location-box' },
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'icon' },
+                        _react2.default.createElement('img', { width: '20px', height: '20px', src: '/public/mats/img/map-marker.svg' })
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'location-name' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'name' },
+                            this.props.dest.placeName || this.props.key
+                        )
+                    )
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { className: 'order-form' },
+                    _react2.default.createElement('input', { type: 'text', placeholder: 'name' }),
+                    _react2.default.createElement('input', { type: 'text', placeholder: 'mobile' })
+                )
+            );
+        }
+    }]);
+
+    return DestinationBox;
+}(_react.Component);
+
+DestinationBox.propTypes = {
+    dest: _propTypes2.default.object
+};
+
+exports.default = DestinationBox;
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(4)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n.destination-box .location-box .icon img {\n  width: 19px;\n  height: 19px;\n}\n.destination-box .location-box .location-name name {\n  font-size: 20px;\n}\n.destination-box .order-form {\n  display: flex;\n}\n.destination-box .order-form input {\n  margin: 0 5px 0 0;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+__webpack_require__(24);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var OptionPopUp = function (_Component) {
+    _inherits(OptionPopUp, _Component);
+
+    function OptionPopUp(props) {
+        _classCallCheck(this, OptionPopUp);
+
+        var _this = _possibleConstructorReturn(this, (OptionPopUp.__proto__ || Object.getPrototypeOf(OptionPopUp)).call(this, props));
+
+        _this.state = {
+            isShow: false,
+            options: [false, false, false]
+        };
+
+        _this.closeByClick = _this.closeByClick.bind(_this);
+        return _this;
+    }
+
+    _createClass(OptionPopUp, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            window.addEventListener("mousedown", this.closeByClick);
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            window.removeEventListener("mousedown", this.closeByClick);
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            this.setState({
+                isShow: nextProps.isShow
+            });
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var sty = {
+                display: "none"
+            };
+
+            console.log(this.state.isShow);
+
+            if (this.state.isShow === true) {
+                sty.display = "block";
+            }
+
+            var styOptions = [{ opacity: 1 }, { opacity: 1 }, { opacity: 1 }];
+
+            for (var i = 0; i < this.state.options.length; i++) {
+                if (this.state.options[i] === true) {
+                    styOptions[i].opacity = 1;
+                } else {
+                    styOptions[i].opacity = 0.5;
+                }
+            }
+
+            return _react2.default.createElement(
+                'div',
+                { className: 'option-pop', style: sty },
+                _react2.default.createElement(
+                    'div',
+                    { className: 'popup-content' },
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'head' },
+                        'Extra Services'
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'choice-box' },
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'choice' },
+                            _react2.default.createElement('img', { src: '/public/mats/img/money.svg' }),
+                            _react2.default.createElement(
+                                'div',
+                                { className: 'choice-text' },
+                                'COD +50 THB'
+                            ),
+                            _react2.default.createElement(
+                                'a',
+                                { role: 'button', style: styOptions[0], onClick: this.selectOption.bind(this, 0) },
+                                _react2.default.createElement('img', { style: { width: "28px", heighe: "28px" }, src: '/public/mats/img/round-done-button.svg' })
+                            )
+                        ),
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'choice' },
+                            _react2.default.createElement('img', { src: '/public/mats/img/refresh-button.svg' }),
+                            _react2.default.createElement(
+                                'div',
+                                { className: 'choice-text' },
+                                'Return trip +100 THB'
+                            ),
+                            _react2.default.createElement(
+                                'a',
+                                { role: 'button', style: styOptions[1], onClick: this.selectOption.bind(this, 1) },
+                                _react2.default.createElement('img', { style: { width: "28px", heighe: "28px" }, src: '/public/mats/img/round-done-button.svg' })
+                            )
+                        ),
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'choice' },
+                            _react2.default.createElement('img', { src: '/public/mats/img/closed-cardboard-box.svg' }),
+                            _react2.default.createElement(
+                                'div',
+                                { className: 'choice-text' },
+                                'Big parcel +200 THB'
+                            ),
+                            _react2.default.createElement(
+                                'a',
+                                { role: 'button', style: styOptions[2], onClick: this.selectOption.bind(this, 2) },
+                                _react2.default.createElement('img', { style: { width: "28px", heighe: "28px" }, src: '/public/mats/img/round-done-button.svg' })
+                            )
+                        )
+                    ),
+                    _react2.default.createElement(
+                        'div',
+                        { className: 'buttom-box' },
+                        _react2.default.createElement(
+                            'button',
+                            { onClick: this.confirmOptions.bind(this) },
+                            'Confirm'
+                        )
+                    )
+                )
+            );
+        }
+    }, {
+        key: 'selectOption',
+        value: function selectOption(number, e) {
+
+            var options = this.state.options;
+            options[number] = !options[number];
+
+            this.setState({
+                options: options
+            });
+        }
+    }, {
+        key: 'confirmOptions',
+        value: function confirmOptions(e) {
+            this.props.onConfirm(this.state.options);
+            this.setState({
+                isShow: false
+            });
+        }
+    }, {
+        key: 'close',
+        value: function close(e) {
+            this.setState({
+                isShow: false
+            });
+        }
+    }, {
+        key: 'closeByClick',
+        value: function closeByClick(e) {
+            if (e.target.className === 'option-pop') {
+                this.setState({ isShow: false });
+            }
+        }
+    }]);
+
+    return OptionPopUp;
+}(_react.Component);
+
+exports.default = OptionPopUp;
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(4)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, ".option-pop {\n  display: none;\n  position: fixed;\n  z-index: 100;\n  padding-top: 100px;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  background-color: #000;\n  background-color: rgba(0,0,0,0.4);\n}\n.option-pop .popup-content {\n  margin: auto;\n  width: 290px;\n  height: 300px;\n  padding: 10px;\n  background-color: #fff;\n  border: solid 1px #d6d6d6;\n}\n.option-pop .popup-content .head {\n  font-weight: 600;\n}\n.option-pop .popup-content .choice-box {\n  padding: 10px;\n}\n.option-pop .popup-content .choice-box .choice {\n  display: flex;\n  justify-content: space-between;\n  margin: 0 0 15px 0;\n}\n.option-pop .popup-content .choice-box .choice img {\n  width: 30px;\n  height: 30px;\n}\n.option-pop .popup-content .buttom-box {\n  text-align: center;\n}\n.option-pop .popup-content .buttom-box button {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #fff solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 

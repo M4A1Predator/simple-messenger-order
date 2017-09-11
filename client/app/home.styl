@@ -5,13 +5,15 @@ html body
     padding 0
 
 .home
+    width 100%
     height 100vh
     padding 15px 15px 0 15px
     .markerbox-container
+        position absolute
         z-index 10
         width 100%
         max-width 421px
-        height 90px
+        height 110px
         overflow-y scroll
         
         .option-box
@@ -21,3 +23,22 @@ html body
                 .icon
                     width 19px
                     height 19px
+    
+    .total-box
+        display flex
+        align-items center
+        .total-text
+            margin 0 15px 0 0
+            font-size 20px
+        .btn-container
+            margin 0 0 0 0
+            button
+                width 100px
+                height 30px
+                color #ffffff
+                background-color #41985e
+                border 1px #ffffff solid 
+                border-radius 3px
+
+    .gmap
+        margin 95px 0 0 0 

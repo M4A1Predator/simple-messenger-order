@@ -32,6 +32,10 @@ const displayDirections = (directions) => {
         return(
             <DirectionsRenderer 
                 directions={direction}
+                options={{
+                    preserveViewport: true,
+                    suppressMarkers: true
+                }}
                 key={i} />
         )
     })
@@ -70,7 +74,22 @@ class Home extends Component {
     }
 
     componentWillMount() {
-        
+        if(this.props.orderData != null){
+            const ms = []
+            const ps = []
+            this.props.orderData.dests.forEach((dest) => {
+                ms.push(dest.marker)
+                ps.push(dest.point)
+            })
+
+            this.setState({
+                boxNum : this.props.orderData.dests.length,
+                markers: ms,
+                points : ps,
+                directions: this.props.orderData.directions,
+                totalDistance: this.props.orderData.totalDistance
+            })
+        }
     }
 
     displayBoxes(){
@@ -82,9 +101,15 @@ class Home extends Component {
                 removeable = true
             }
 
+            let isSelected = false
+            if(this.state.selectedMarker === i){
+                isSelected = true
+            }
+
             bs.push(
                 <MarkerBox
                     index={i}
+                    isSelected={isSelected}
                     point={this.state.points[i]}
                     key={i}
                     removeable={removeable}
@@ -105,27 +130,15 @@ class Home extends Component {
                             return mk
                         })
                     }
-                    {/* <MarkerBox
-                        index={0}
-                        point={this.state.points[0]}
-                        key={0}
-                        onSelect={this.onSelectMarkerBox.bind(this)}
-                    />
-                    <MarkerBox
-                        index={1}
-                        point={this.state.points[1]}
-                        key={1}
-                        onSelect={this.onSelectMarkerBox.bind(this)}
-                    /> */}
                     <div className="option-box">
                         <div className="option-icon">
                             <a onClick={this.addMarkerBox.bind(this)} role="button" style={{cursor: "pointer"}}>
-                                <img className="icon" src="/public/mats/img/plus-sign-in-a-black-circle.svg"/>
+                                <img className="icon" width="20px" height="20px" src="/public/mats/img/plus-sign-in-a-black-circle.svg"/>
                             </a>
                         </div>
                     </div>
                 </div>
-                <div style={{height: "80%", display: this.state.isShowGmap?'block':'block'}}>
+                <div className="gmap" style={{height: "80%", display: this.state.isShowGmap?'block':'block'}}>
                     <Gmap
                         pos={this.state.pos}
                         onMapLoad={this.handleMapLoad.bind(this)}
@@ -136,8 +149,12 @@ class Home extends Component {
                         directions={this.state.directions}
                     />
                 </div>
-
-                TOTAL : {this.state.totalDistance + " KM"}
+                <div className="total-box">
+                    <div className="total-text">Total {this.state.totalDistance + " KM"}</div>
+                    <div className="btn-container">
+                        <button onClick={this.order.bind(this)}>Next</button>
+                    </div>    
+                </div>
             </div>
         );
     }
@@ -267,7 +284,8 @@ class Home extends Component {
 
     addMarkerBox(e){
         this.setState({
-            boxNum : this.state.boxNum + 1
+            boxNum : this.state.boxNum + 1,
+            selectedMarker: this.state.selectedMarker + 1
         })
     }
 
@@ -316,6 +334,8 @@ class Home extends Component {
                 origin: start.pos,
                 destination: end.pos,
                 travelMode: google.maps.TravelMode.DRIVING,
+                // preserveViewport: true,
+                // suppressMarkers: true
                 }, (result, status) => {
                 if (status === google.maps.DirectionsStatus.OK) {
                     const totalDistance = result.routes[0].legs[0].distance
@@ -343,17 +363,60 @@ class Home extends Component {
 
         return data
     }
+
+    order(e){
+        // Get data
+        const points = this.state.points
+        const markers = this.state.markers
+
+        const dests = []
+        for(let i=0;i<markers.length;i++){
+
+            let placeName = points[i][0].formatted_address
+            if(placeName == undefined){
+                placeName = markers[i].getPosition().lat() + " " + markers[i].getPosition().lng();
+            }
+
+            const dest = {
+                marker : markers[i],
+                point : points[i],
+                placeName : placeName
+            }
+            dests.push(dest)
+        }
+
+        if(dests.length < 2){
+            return;
+        }
+
+        const data = {
+            dests,
+            directions: this.state.directions,
+            totalDistance: this.state.totalDistance
+        }
+
+        // Redirect
+        this.props.order(data);
+        this.props.history.push('/orderDetail')
+    }
     
 }
 
 const mapStateToProps = (state) => {
     return {
-        webData : state.webData
+        orderData : state.orderData
     }
 }
 
-const mapDispatchToProps = (dispatch, prev) => {
+const mapDispatchToProps = (dispatch, prevState) => {
     return {
+        order : (orderData) => {
+            const action = {
+                type: 'ORDER',
+                data: orderData
+            }
+            dispatch(action)
+        }
     }
 }
 
