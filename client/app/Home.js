@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import initMap from './map/initMap'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
+// import { SearchBox } from 'react-google-maps/lib/places/SearchBox'
 import MarkerBox from './components/MarkerBox'
 import './home.styl'
 
@@ -62,7 +63,7 @@ class Home extends Component {
 
         this.state = {
             isShowGmap : false,
-            pos : {lat: 13.7246812, lng: -100.5006702},
+            pos : {lat: 13.7246812, lng: 100.5006702},
             totalDistance : 0,
             markers : [],
             points : [],
@@ -125,16 +126,18 @@ class Home extends Component {
         return (
             <div className="home">
                 <div className="markerbox-container">
-                    {
-                        this.displayBoxes().map( (mk) => {
-                            return mk
-                        })
-                    }
-                    <div className="option-box">
-                        <div className="option-icon">
-                            <a onClick={this.addMarkerBox.bind(this)} role="button" style={{cursor: "pointer"}}>
-                                <img className="icon" width="20px" height="20px" src="/public/mats/img/plus-sign-in-a-black-circle.svg"/>
-                            </a>
+                    <div className="markerbox-box" style={{position: "relative", left: "-50%"}}>
+                        {
+                            this.displayBoxes().map( (mk) => {
+                                return mk
+                            })
+                        }
+                        <div className="option-box">
+                            <div className="option-icon">
+                                <a onClick={this.addMarkerBox.bind(this)} role="button" style={{cursor: "pointer"}}>
+                                    <img className="icon" width="20px" height="20px" src="/public/mats/img/plus-sign-in-a-black-circle.svg"/>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -173,13 +176,11 @@ class Home extends Component {
                     }
                     resolve(data)
                 }, function() {
-                    // handleLocationError(true, infoWindow, map.getCenter());
-                    reject({})
+                    reject({"msg": "geolocation err"})
                 });
             } else {
                 // Browser doesn't support Geolocation
-                // handleLocationError(false, infoWindow, map.getCenter());
-                reject({})
+                reject({"msg": "Browser doesn't support Geolocation"})
             }
         })
         .then(data => {
@@ -285,7 +286,7 @@ class Home extends Component {
     addMarkerBox(e){
         this.setState({
             boxNum : this.state.boxNum + 1,
-            selectedMarker: this.state.selectedMarker + 1
+            selectedMarker: this.state.selectedMarker  + 1
         })
     }
 
@@ -329,6 +330,11 @@ class Home extends Component {
 
     getDerection(start, end){
         return new Promise( (resolve, reject) => {
+            if(start == undefined || end == undefined){
+                reject("Undefined point")
+                return;
+            }
+
             const DirectionsService = new google.maps.DirectionsService();
             DirectionsService.route({
                 origin: start.pos,
@@ -371,6 +377,9 @@ class Home extends Component {
 
         const dests = []
         for(let i=0;i<markers.length;i++){
+            if(points[i] == undefined || markers[i] == undefined){
+                continue;
+            }
 
             let placeName = points[i][0].formatted_address
             if(placeName == undefined){

@@ -53,9 +53,9 @@ class MarkerBox extends Component {
                     </div>
                     <div className="input-box">
                         <input
+                            ref={"findLocation"}
                             style={intStyle}
                             type="text"
-                            
                             value={this.state.placeName}
                             onFocus={this.onSelect.bind(this)} 
                             onChange={this.handleChanged.bind(this, 'placeName')}

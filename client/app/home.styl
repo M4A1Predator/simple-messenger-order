@@ -10,19 +10,24 @@ html body
     padding 15px 15px 0 15px
     .markerbox-container
         position absolute
+        left 50%
         z-index 10
         width 100%
         max-width 421px
         height 110px
-        overflow-y scroll
-        
-        .option-box
-            .option-icon
-                float right
-                margin 5px 25px 0 0
-                .icon
-                    width 19px
-                    height 19px
+        // overflow-y scroll
+        .markerbox-box
+            position relative
+            height 110px
+            overflow-y scroll
+            padding 0 0 0 15px
+            .option-box
+                .option-icon
+                    float right
+                    margin 5px 25px 0 0
+                    .icon
+                        width 19px
+                        height 19px
     
     .total-box
         display flex
