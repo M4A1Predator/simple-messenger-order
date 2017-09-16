@@ -308,6 +308,9 @@ var appReducers = function appReducers() {
         case 'ORDER':
             state = action.data;
             break;
+        case 'CLEAR':
+            state = null;
+            break;
     }
 
     return state;
@@ -408,10 +411,6 @@ var _initMap2 = _interopRequireDefault(_initMap);
 
 var _reactGoogleMaps = __webpack_require__(15);
 
-var _SearchBox = __webpack_require__(5);
-
-var _SearchBox2 = _interopRequireDefault(_SearchBox);
-
 var _MarkerBox = __webpack_require__(16);
 
 var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
@@ -425,6 +424,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+// import SearchBox from "react-google-maps/lib/components/places/SearchBox";
+
 
 var displayMarkers = function displayMarkers(markers) {
     return markers.map(function (marker, i) {
@@ -554,7 +555,7 @@ var Home = function (_Component) {
                     { className: 'markerbox-container' },
                     _react2.default.createElement(
                         'div',
-                        { className: 'markerbox-box', style: { position: "relative", left: "-50%" } },
+                        { className: 'markerbox-box' },
                         this.displayBoxes().map(function (mk) {
                             return mk;
                         }),
@@ -614,6 +615,14 @@ var Home = function (_Component) {
 
             // Get position
             var promise = new Promise(function (resolve, reject) {
+                if (_this2.props.orderData != null) {
+                    if (_this2.props.orderData.dests[0] != undefined) {
+                        var firstDest = _this2.props.orderData.dests[0];
+                        var pos = firstDest.marker.pos;
+                        resolve({ pos: pos });
+                        return;
+                    }
+                }
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(function (position) {
                         var pos = {
@@ -675,56 +684,12 @@ var Home = function (_Component) {
                     });
                 }).then(function (results) {
                     var points = _this3.state.points;
-                    console.log(results);
                     points[_this3.state.selectedMarker] = results;
                     _this3.setState({ points: points });
                 });
 
                 // Direction
                 this.calculateDirections(this.state.selectedMarker, markers);
-                // if(markers.length >= 2){
-                //     const DirectionsService = new google.maps.DirectionsService();
-                //     const markers = this.state.markers
-                //     const directions = this.state.directions
-
-                //     if(this.state.selectedMarker - 1 >= 0 && markers[this.state.selectedMarker - 1] != undefined){
-                //         this.getDerection(markers[this.state.selectedMarker - 1], markers[this.state.selectedMarker])
-                //         .then( result => {
-                //             directions[this.state.selectedMarker - 1] = result
-                //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
-                //             this.setState({
-                //                 directions,
-                //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
-                //             })
-                //         })
-                //     }
-
-                //     if(this.state.selectedMarker + 1 < markers.length && markers[this.state.selectedMarker + 1] != undefined){
-                //         this.getDerection(markers[this.state.selectedMarker], markers[this.state.selectedMarker + 1])
-                //         .then( result => {
-                //             directions[this.state.selectedMarker] = result
-                //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
-                //             this.setState({
-                //                 directions,
-                //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
-                //             })
-                //         })
-                //     }
-
-                //     // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
-                //     // .then( result => {
-
-                //     //     const directions = this.state.directions
-                //     //     directions.push(result)
-
-                //     //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
-
-                //     //     this.setState({
-                //     //         directions,
-                //     //         totalDistance: this.state.totalDistance + distance
-                //     //     })
-                //     // })
-                // }
             }
         }
     }, {
@@ -757,9 +722,15 @@ var Home = function (_Component) {
     }, {
         key: 'addMarkerBox',
         value: function addMarkerBox(e) {
+
+            var curIndex = this.state.selectedMarker;
+            var boxNum = this.state.boxNum;
+
+            var selectedIndex = boxNum;
+
             this.setState({
-                boxNum: this.state.boxNum + 1,
-                selectedMarker: this.state.selectedMarker + 1
+                boxNum: boxNum + 1,
+                selectedMarker: selectedIndex
             });
         }
     }, {
@@ -1033,7 +1004,7 @@ var MarkerBox = function (_Component) {
     }, {
         key: 'componentWillReceiveProps',
         value: function componentWillReceiveProps(nextProps) {
-            var placeName = this.getPlaceName(this.props.point);
+            var placeName = this.getPlaceName(nextProps.point);
             this.setState({
                 placeName: placeName
             });
@@ -1058,7 +1029,7 @@ var MarkerBox = function (_Component) {
 
             var intStyle = {};
             if (this.props.isSelected === true) {
-                intStyle.backgroundColor = "#69ccf0";
+                intStyle.backgroundColor = "#e1f4fc";
             }
 
             return _react2.default.createElement(
@@ -1148,7 +1119,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: 90%;\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
+exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: calc(100% - 35px);\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
 
 // exports
 
@@ -1162,7 +1133,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n.home {\n  width: 100%;\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  position: absolute;\n  left: 50%;\n  z-index: 10;\n  width: 100%;\n  max-width: 421px;\n  height: 110px;\n}\n.home .markerbox-container .markerbox-box {\n  position: relative;\n  height: 110px;\n  overflow-y: scroll;\n  padding: 0 0 0 15px;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon {\n  float: right;\n  margin: 5px 25px 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n.home .total-box {\n  display: flex;\n  align-items: center;\n}\n.home .total-box .total-text {\n  margin: 0 15px 0 0;\n  font-size: 20px;\n}\n.home .total-box .btn-container {\n  margin: 0 0 0 0;\n}\n.home .total-box .btn-container button {\n  width: 100px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #fff solid;\n  border-radius: 3px;\n}\n.home .gmap {\n  margin: 95px 0 0 0;\n}\n", ""]);
+exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n.home {\n  width: 100%;\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  position: absolute;\n  z-index: 10;\n  width: calc(100% - 35px);\n  max-width: 720px;\n  height: 110px;\n  overflow-y: auto;\n}\n.home .markerbox-container .markerbox-box {\n  padding: 0 0 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon {\n  float: right;\n  margin: 5px 20px 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n.home .gmap {\n  margin: 95px 0 0 0;\n}\n.home .total-box {\n  display: flex;\n  align-items: center;\n  margin: 5px 0 0 0;\n}\n.home .total-box .total-text {\n  font-size: 20px;\n}\n.home .total-box .btn-container {\n  margin: 0 0 0 5px;\n}\n.home .total-box .btn-container button {\n  width: 120px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #fff solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 
@@ -1359,7 +1330,7 @@ var OrderDetail = function (_Component) {
                     ),
                     _react2.default.createElement(
                         'button',
-                        { className: 'confirm-btn' },
+                        { onClick: this.confirmOrder.bind(this), className: 'confirm-btn' },
                         'Confirm'
                     )
                 ),
@@ -1391,6 +1362,12 @@ var OrderDetail = function (_Component) {
         value: function backToMap(e) {
             this.props.history.goBack();
         }
+    }, {
+        key: 'confirmOrder',
+        value: function confirmOrder(e) {
+            this.props.order();
+            this.props.history.goBack();
+        }
     }]);
 
     return OrderDetail;
@@ -1402,7 +1379,19 @@ var mapStateToProps = function mapStateToProps(state) {
     };
 };
 
-exports.default = (0, _reactRedux.connect)(mapStateToProps)(OrderDetail);
+var mapDisPatchToProps = function mapDisPatchToProps(dispatch) {
+    return {
+        order: function order() {
+            var action = {
+                type: 'CLEAR'
+            };
+
+            dispatch(action);
+        }
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDisPatchToProps)(OrderDetail);
 
 /***/ }),
 /* 20 */
@@ -1568,9 +1557,6 @@ var OptionPopUp = function (_Component) {
             var sty = {
                 display: "none"
             };
-
-            console.log(this.state.isShow);
-
             if (this.state.isShow === true) {
                 sty.display = "block";
             }
@@ -1720,7 +1706,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".order-detail {\n  width: 100%;\n}\n.container {\n  display: table;\n}\n@media (min-width: 960px) {\n  .container {\n    width: 960px;\n  }\n}\n.container .destination-container {\n  padding: 5px 5px;\n}\n.container .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.container .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.container .option-box .head .icon {\n  cursor: pointer;\n}\n.container .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.container .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.container .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.container .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.container .detail-box {\n  margin: 50px 0 0 0;\n}\n.container .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.container .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.container .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.container .button-box {\n  text-align: center;\n}\n.container .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.container .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
+exports.push([module.i, ".order-detail {\n  width: 100%;\n  margin-top: 20px;\n}\n.container {\n  display: table;\n}\n@media (min-width: 960px) {\n  .container {\n    width: 960px;\n  }\n}\n.container .destination-container {\n  padding: 5px 5px;\n}\n.container .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.container .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.container .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.container .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.container .option-box .head .icon {\n  cursor: pointer;\n}\n.container .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.container .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.container .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.container .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.container .detail-box {\n  margin: 50px 0 0 0;\n}\n.container .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.container .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.container .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.container .button-box {\n  text-align: center;\n}\n.container .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.container .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 

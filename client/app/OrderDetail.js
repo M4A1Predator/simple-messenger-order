@@ -119,7 +119,7 @@ class OrderDetail extends Component {
                 </div>
                 <div className="button-box">
                     <button onClick={this.backToMap.bind(this)} className="back-btn">Back</button>
-                    <button className="confirm-btn">Confirm</button>
+                    <button onClick={this.confirmOrder.bind(this)} className="confirm-btn">Confirm</button>
                 </div>
                 <OptionPopUp onConfirm={this.onConfirmExtra.bind(this)} isShow={this.state.isShowPopUp} />
             </div>
@@ -147,6 +147,11 @@ class OrderDetail extends Component {
     backToMap(e){
         this.props.history.goBack()
     }
+
+    confirmOrder(e){
+        this.props.order();
+        this.props.history.goBack();
+    }
 }
 
 const mapStateToProps = (state) => {
@@ -155,4 +160,16 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps)(OrderDetail);
+const mapDisPatchToProps = (dispatch) => {
+    return {
+        order : () => {
+            const action = {
+                type: 'CLEAR'
+            }
+
+            dispatch(action)
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDisPatchToProps)(OrderDetail);

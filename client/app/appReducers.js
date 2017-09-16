@@ -5,6 +5,9 @@ const appReducers = (state=null, action) => {
         case 'ORDER':
             state = action.data
             break;
+        case 'CLEAR':
+            state = null
+            break;
     }
 
     return state

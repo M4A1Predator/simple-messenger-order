@@ -21,7 +21,7 @@ class MarkerBox extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const placeName = this.getPlaceName(this.props.point)
+        const placeName = this.getPlaceName(nextProps.point)
         this.setState({
             placeName
         })
@@ -29,7 +29,7 @@ class MarkerBox extends Component {
     
     render() {
         // const placeName = this.getPlaceName(this.props.point)
-        const removeComponent = { component: ""}
+        const removeComponent = { component: "" }
 
         if(this.props.removeable === true){
             removeComponent.component = (
@@ -43,7 +43,7 @@ class MarkerBox extends Component {
 
         const intStyle = {}
         if(this.props.isSelected === true){
-            intStyle.backgroundColor="#69ccf0"
+            intStyle.backgroundColor="#e1f4fc"
         }
 
         return (

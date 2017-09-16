@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import initMap from './map/initMap'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
-import SearchBox from "react-google-maps/lib/components/places/SearchBox";
+// import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import MarkerBox from './components/MarkerBox'
 import './home.styl'
 
@@ -127,7 +127,7 @@ class Home extends Component {
         return (
             <div className="home">
                 <div className="markerbox-container">
-                    <div className="markerbox-box" style={{position: "relative", left: "-50%"}}>
+                    <div className="markerbox-box">
                         {
                             this.displayBoxes().map( (mk) => {
                                 return mk
@@ -167,6 +167,14 @@ class Home extends Component {
     componentDidMount() {
         // Get position
         const promise = new Promise( (resolve, reject) => {
+            if(this.props.orderData != null){
+                if(this.props.orderData.dests[0] != undefined){
+                    const firstDest = this.props.orderData.dests[0];
+                    const pos = firstDest.marker.pos;
+                    resolve({pos})
+                    return;
+                }
+            }
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const pos = {
@@ -227,56 +235,12 @@ class Home extends Component {
                 })
             }).then(results => {
                 const points = this.state.points
-                console.log(results)
                 points[this.state.selectedMarker] = results
                 this.setState({points})
             })
             
             // Direction
             this.calculateDirections(this.state.selectedMarker, markers)
-            // if(markers.length >= 2){
-            //     const DirectionsService = new google.maps.DirectionsService();
-            //     const markers = this.state.markers
-            //     const directions = this.state.directions
-                
-            //     if(this.state.selectedMarker - 1 >= 0 && markers[this.state.selectedMarker - 1] != undefined){
-            //         this.getDerection(markers[this.state.selectedMarker - 1], markers[this.state.selectedMarker])
-            //         .then( result => {
-            //             directions[this.state.selectedMarker - 1] = result
-            //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
-            //             this.setState({
-            //                 directions,
-            //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
-            //             })
-            //         })
-            //     }
-
-            //     if(this.state.selectedMarker + 1 < markers.length && markers[this.state.selectedMarker + 1] != undefined){
-            //         this.getDerection(markers[this.state.selectedMarker], markers[this.state.selectedMarker + 1])
-            //         .then( result => {
-            //             directions[this.state.selectedMarker] = result
-            //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
-            //             this.setState({
-            //                 directions,
-            //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
-            //             })
-            //         })
-            //     }
-                
-            //     // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
-            //     // .then( result => {
-
-            //     //     const directions = this.state.directions
-            //     //     directions.push(result)
-
-            //     //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
-
-            //     //     this.setState({
-            //     //         directions,
-            //     //         totalDistance: this.state.totalDistance + distance
-            //     //     })
-            //     // })
-            // }
         }
     }
 
@@ -306,9 +270,15 @@ class Home extends Component {
     }
 
     addMarkerBox(e){
+
+        const curIndex = this.state.selectedMarker
+        const boxNum = this.state.boxNum
+        
+        let selectedIndex = boxNum
+        
         this.setState({
-            boxNum : this.state.boxNum + 1,
-            selectedMarker: this.state.selectedMarker  + 1
+            boxNum : boxNum + 1,
+            selectedMarker: selectedIndex
         })
     }
 

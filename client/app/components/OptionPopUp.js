@@ -31,9 +31,6 @@ class OptionPopUp extends Component {
         const sty = {
             display: "none"
         }
-
-        console.log(this.state.isShow)
-
         if(this.state.isShow === true){
             sty.display = "block"
         }
