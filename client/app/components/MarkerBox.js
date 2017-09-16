@@ -71,7 +71,7 @@ class MarkerBox extends Component {
     componentDidMount() {
         const autocomplete = new google.maps.places.Autocomplete(this.refs.findLocation)
         autocomplete.addListener('place_changed', () => {
-            // console.log(autocomplete.getPlace())
+            console.log(autocomplete.getPlace())
             // this.setState({
             //     placeName: autocomplete.getPlace().formatted_address
             // })
@@ -92,6 +92,10 @@ class MarkerBox extends Component {
     getPlaceName(results){
         if(results == undefined || results.length == 0){
             return '';
+        }
+
+        if(results[0].name != undefined){
+            return results[0].name + ' - ' + results[0].formatted_address
         }
         
         return results[0].formatted_address

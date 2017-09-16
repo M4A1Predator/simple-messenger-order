@@ -61,7 +61,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "/assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -174,16 +174,10 @@ module.exports = require("redux");
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = require("react-google-maps/lib/components/places/SearchBox");
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
 module.exports = require("prop-types");
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -198,7 +192,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _server = __webpack_require__(8);
+var _server = __webpack_require__(7);
 
 var _server2 = _interopRequireDefault(_server);
 
@@ -206,17 +200,17 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _reducers = __webpack_require__(9);
+var _reducers = __webpack_require__(8);
 
 var _reducers2 = _interopRequireDefault(_reducers);
 
 var _redux = __webpack_require__(4);
 
-var _reduxThunk = __webpack_require__(11);
+var _reduxThunk = __webpack_require__(10);
 
 var _reduxThunk2 = _interopRequireDefault(_reduxThunk);
 
-var _App = __webpack_require__(12);
+var _App = __webpack_require__(11);
 
 var _App2 = _interopRequireDefault(_App);
 
@@ -252,13 +246,13 @@ function render(req, res) {
 }
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-dom/server");
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -270,7 +264,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _redux = __webpack_require__(4);
 
-var _appReducers = __webpack_require__(10);
+var _appReducers = __webpack_require__(9);
 
 var _appReducers2 = _interopRequireDefault(_appReducers);
 
@@ -289,7 +283,7 @@ var reducers = (0, _redux.combineReducers)({
 exports.default = reducers;
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -318,13 +312,13 @@ var appReducers = function appReducers() {
 exports.default = appReducers;
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = require("redux-thunk");
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -342,7 +336,7 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _Home = __webpack_require__(13);
+var _Home = __webpack_require__(12);
 
 var _Home2 = _interopRequireDefault(_Home);
 
@@ -385,7 +379,7 @@ var App = function (_Component) {
 exports.default = App;
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -401,19 +395,23 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _reactDom = __webpack_require__(26);
+
+var _reactDom2 = _interopRequireDefault(_reactDom);
+
 var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _initMap = __webpack_require__(14);
+var _reactGoogleMaps = __webpack_require__(14);
 
-var _initMap2 = _interopRequireDefault(_initMap);
-
-var _reactGoogleMaps = __webpack_require__(15);
-
-var _MarkerBox = __webpack_require__(16);
+var _MarkerBox = __webpack_require__(15);
 
 var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
+
+var _axios = __webpack_require__(25);
+
+var _axios2 = _interopRequireDefault(_axios);
 
 __webpack_require__(18);
 
@@ -456,7 +454,7 @@ var displayDirections = function displayDirections(directions) {
             key: i });
     });
 };
-
+{/* ref={props.onMapLoad} */}
 var Gmap = (0, _reactGoogleMaps.withGoogleMap)(function (props) {
     return _react2.default.createElement(
         _reactGoogleMaps.GoogleMap,
@@ -489,7 +487,8 @@ var Home = function (_Component) {
             points: [],
             directions: [],
             selectedMarker: -1,
-            boxNum: 2
+            boxNum: 2,
+            map: null
         };
 
         return _this;
@@ -547,6 +546,7 @@ var Home = function (_Component) {
     }, {
         key: 'render',
         value: function render() {
+
             return _react2.default.createElement(
                 'div',
                 { className: 'home' },
@@ -584,7 +584,8 @@ var Home = function (_Component) {
                         mapElement: _react2.default.createElement('div', { style: { height: '100%' } }),
                         onClickMap: this.handleMapClick.bind(this),
                         markers: this.state.markers,
-                        directions: this.state.directions
+                        directions: this.state.directions,
+                        ref: 'gmap'
                     })
                 ),
                 _react2.default.createElement(
@@ -645,11 +646,17 @@ var Home = function (_Component) {
             }).catch(function (err) {
                 _this2.setState({ pos: _this2.state.pos, isShowGmap: true });
             });
+            // new google.maps.places.PlacesService();
+            console.log(this.refs.gmap);
         }
     }, {
         key: 'handleMapLoad',
         value: function handleMapLoad(ref) {
             // this.refs.map = ref;
+            if (ref) {
+                // new google.maps.places.PlacesService(ref.getDiv())
+                // console.log(ref.props.mapElement)
+            }
         }
     }, {
         key: 'handleMapClick',
@@ -680,6 +687,12 @@ var Home = function (_Component) {
                         if (results.length == 0) {
                             return;
                         }
+                        // geocoder.geocode({'placeId': results[0].place_id}, function(results, status){
+                        //     if(status != google.maps.GeocoderStatus.OK){
+                        //         return;
+                        //     }
+                        // })
+                        console.log(results);
                         resolve(results);
                     });
                 }).then(function (results) {
@@ -915,35 +928,14 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch, prevState) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Home);
 
 /***/ }),
+/* 13 */,
 /* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-var initMap = function initMap() {
-    var map;
-    function initMap() {
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: { lat: -34.397, lng: 150.644 },
-            zoom: 8
-        });
-    }
-};
-
-exports.default = initMap;
-
-/***/ }),
-/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-google-maps");
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -959,11 +951,11 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(6);
+var _propTypes = __webpack_require__(5);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _SearchBox = __webpack_require__(5);
+var _SearchBox = __webpack_require__(16);
 
 var _SearchBox2 = _interopRequireDefault(_SearchBox);
 
@@ -1066,7 +1058,7 @@ var MarkerBox = function (_Component) {
 
             var autocomplete = new google.maps.places.Autocomplete(this.refs.findLocation);
             autocomplete.addListener('place_changed', function () {
-                // console.log(autocomplete.getPlace())
+                console.log(autocomplete.getPlace());
                 // this.setState({
                 //     placeName: autocomplete.getPlace().formatted_address
                 // })
@@ -1091,6 +1083,10 @@ var MarkerBox = function (_Component) {
                 return '';
             }
 
+            if (results[0].name != undefined) {
+                return results[0].name + ' - ' + results[0].formatted_address;
+            }
+
             return results[0].formatted_address;
         }
     }]);
@@ -1109,6 +1105,12 @@ MarkerBox.defaultProps = {
 };
 
 exports.default = MarkerBox;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+module.exports = require("react-google-maps/lib/components/places/SearchBox");
 
 /***/ }),
 /* 17 */
@@ -1410,7 +1412,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(6);
+var _propTypes = __webpack_require__(5);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
@@ -1710,6 +1712,18 @@ exports.push([module.i, ".order-detail {\n  width: 100%;\n  margin-top: 20px;\n}
 
 // exports
 
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+module.exports = require("axios");
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+module.exports = require("react-dom");
 
 /***/ })
 /******/ ]);

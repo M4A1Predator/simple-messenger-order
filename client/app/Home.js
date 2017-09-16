@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import initMap from './map/initMap'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
 // import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import MarkerBox from './components/MarkerBox'
+import axios from 'axios'
 import './home.styl'
 
 const displayMarkers = (markers) => {
@@ -41,7 +42,7 @@ const displayDirections = (directions) => {
         )
     })
 }
-
+{/* ref={props.onMapLoad} */}
 const Gmap = withGoogleMap(props => (
     <GoogleMap
         ref={props.onMapLoad}
@@ -69,7 +70,8 @@ class Home extends Component {
             points : [],
             directions: [],
             selectedMarker: -1,
-            boxNum : 2
+            boxNum : 2,
+            map : null
         }
 
     }
@@ -124,6 +126,7 @@ class Home extends Component {
     }
     
     render() {
+        
         return (
             <div className="home">
                 <div className="markerbox-container">
@@ -151,6 +154,7 @@ class Home extends Component {
                         onClickMap={this.handleMapClick.bind(this)}
                         markers={this.state.markers}
                         directions={this.state.directions}
+                        ref="gmap"
                     />
                 </div>
                 <div className="total-box">
@@ -199,14 +203,19 @@ class Home extends Component {
         .catch(err => {
             this.setState({pos: this.state.pos, isShowGmap: true})
         })
+        // new google.maps.places.PlacesService();
+        console.log(this.refs.gmap)
     }
     
     handleMapLoad(ref){
         // this.refs.map = ref;
+        if(ref){
+            // new google.maps.places.PlacesService(ref.getDiv())
+            // console.log(ref.props.mapElement)
+        }
     }
 
     handleMapClick(e){
-
         if(this.state.selectedMarker >= 0){
             const m = {
                 pos: e.latLng,
@@ -231,6 +240,12 @@ class Home extends Component {
                     if(results.length == 0){
                         return;
                     }
+                    // geocoder.geocode({'placeId': results[0].place_id}, function(results, status){
+                    //     if(status != google.maps.GeocoderStatus.OK){
+                    //         return;
+                    //     }
+                    // })
+                    console.log(results)
                     resolve(results)
                 })
             }).then(results => {
