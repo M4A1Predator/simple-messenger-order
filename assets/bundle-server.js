@@ -61,7 +61,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "/assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -174,10 +174,16 @@ module.exports = require("redux");
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = require("prop-types");
+module.exports = require("react-google-maps/lib/components/places/SearchBox");
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("prop-types");
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -192,7 +198,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _server = __webpack_require__(7);
+var _server = __webpack_require__(8);
 
 var _server2 = _interopRequireDefault(_server);
 
@@ -200,17 +206,17 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _reducers = __webpack_require__(8);
+var _reducers = __webpack_require__(9);
 
 var _reducers2 = _interopRequireDefault(_reducers);
 
 var _redux = __webpack_require__(4);
 
-var _reduxThunk = __webpack_require__(10);
+var _reduxThunk = __webpack_require__(11);
 
 var _reduxThunk2 = _interopRequireDefault(_reduxThunk);
 
-var _App = __webpack_require__(11);
+var _App = __webpack_require__(12);
 
 var _App2 = _interopRequireDefault(_App);
 
@@ -246,13 +252,13 @@ function render(req, res) {
 }
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-dom/server");
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -264,7 +270,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _redux = __webpack_require__(4);
 
-var _appReducers = __webpack_require__(9);
+var _appReducers = __webpack_require__(10);
 
 var _appReducers2 = _interopRequireDefault(_appReducers);
 
@@ -283,7 +289,7 @@ var reducers = (0, _redux.combineReducers)({
 exports.default = reducers;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -309,13 +315,13 @@ var appReducers = function appReducers() {
 exports.default = appReducers;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = require("redux-thunk");
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -333,11 +339,11 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _Home = __webpack_require__(12);
+var _Home = __webpack_require__(13);
 
 var _Home2 = _interopRequireDefault(_Home);
 
-var _OrderDetail = __webpack_require__(18);
+var _OrderDetail = __webpack_require__(19);
 
 var _OrderDetail2 = _interopRequireDefault(_OrderDetail);
 
@@ -376,7 +382,7 @@ var App = function (_Component) {
 exports.default = App;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -396,17 +402,21 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _initMap = __webpack_require__(13);
+var _initMap = __webpack_require__(14);
 
 var _initMap2 = _interopRequireDefault(_initMap);
 
-var _reactGoogleMaps = __webpack_require__(14);
+var _reactGoogleMaps = __webpack_require__(15);
 
-var _MarkerBox = __webpack_require__(15);
+var _SearchBox = __webpack_require__(5);
+
+var _SearchBox2 = _interopRequireDefault(_SearchBox);
+
+var _MarkerBox = __webpack_require__(16);
 
 var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
 
-__webpack_require__(17);
+__webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -415,8 +425,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-// import { SearchBox } from 'react-google-maps/lib/places/SearchBox'
-
 
 var displayMarkers = function displayMarkers(markers) {
     return markers.map(function (marker, i) {
@@ -529,7 +537,8 @@ var Home = function (_Component) {
                     key: i,
                     removeable: removeable,
                     onSelect: this.onSelectMarkerBox.bind(this),
-                    onRemove: this.removeMarkerBox.bind(this, i)
+                    onRemove: this.removeMarkerBox.bind(this, i),
+                    onSearchPlace: this.handleSearchPlace.bind(this)
                 }));
             }
             return bs;
@@ -584,7 +593,7 @@ var Home = function (_Component) {
                         'div',
                         { className: 'total-text' },
                         'Total ',
-                        this.state.totalDistance + " KM"
+                        this.state.totalDistance.toFixed(2) + " KM"
                     ),
                     _react2.default.createElement(
                         'div',
@@ -630,7 +639,9 @@ var Home = function (_Component) {
         }
     }, {
         key: 'handleMapLoad',
-        value: function handleMapLoad(map) {}
+        value: function handleMapLoad(ref) {
+            // this.refs.map = ref;
+        }
     }, {
         key: 'handleMapClick',
         value: function handleMapClick(e) {
@@ -664,53 +675,77 @@ var Home = function (_Component) {
                     });
                 }).then(function (results) {
                     var points = _this3.state.points;
+                    console.log(results);
                     points[_this3.state.selectedMarker] = results;
                     _this3.setState({ points: points });
                 });
 
                 // Direction
-                if (markers.length >= 2) {
-                    var DirectionsService = new google.maps.DirectionsService();
-                    var _markers = this.state.markers;
-                    var directions = this.state.directions;
+                this.calculateDirections(this.state.selectedMarker, markers);
+                // if(markers.length >= 2){
+                //     const DirectionsService = new google.maps.DirectionsService();
+                //     const markers = this.state.markers
+                //     const directions = this.state.directions
 
-                    if (this.state.selectedMarker - 1 >= 0 && _markers[this.state.selectedMarker - 1] != undefined) {
-                        this.getDerection(_markers[this.state.selectedMarker - 1], _markers[this.state.selectedMarker]).then(function (result) {
-                            directions[_this3.state.selectedMarker - 1] = result;
-                            var distance = parseFloat(result.routes[0].legs[0].distance.text);
-                            _this3.setState({
-                                directions: directions,
-                                totalDistance: _this3.getTotalDistanceData(directions).totalDistance
-                            });
-                        });
-                    }
+                //     if(this.state.selectedMarker - 1 >= 0 && markers[this.state.selectedMarker - 1] != undefined){
+                //         this.getDerection(markers[this.state.selectedMarker - 1], markers[this.state.selectedMarker])
+                //         .then( result => {
+                //             directions[this.state.selectedMarker - 1] = result
+                //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                //             this.setState({
+                //                 directions,
+                //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
+                //             })
+                //         })
+                //     }
 
-                    if (this.state.selectedMarker + 1 < _markers.length && _markers[this.state.selectedMarker + 1] != undefined) {
-                        this.getDerection(_markers[this.state.selectedMarker], _markers[this.state.selectedMarker + 1]).then(function (result) {
-                            directions[_this3.state.selectedMarker] = result;
-                            var distance = parseFloat(result.routes[0].legs[0].distance.text);
-                            _this3.setState({
-                                directions: directions,
-                                totalDistance: _this3.getTotalDistanceData(directions).totalDistance
-                            });
-                        });
-                    }
+                //     if(this.state.selectedMarker + 1 < markers.length && markers[this.state.selectedMarker + 1] != undefined){
+                //         this.getDerection(markers[this.state.selectedMarker], markers[this.state.selectedMarker + 1])
+                //         .then( result => {
+                //             directions[this.state.selectedMarker] = result
+                //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                //             this.setState({
+                //                 directions,
+                //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
+                //             })
+                //         })
+                //     }
 
-                    // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
-                    // .then( result => {
+                //     // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
+                //     // .then( result => {
 
-                    //     const directions = this.state.directions
-                    //     directions.push(result)
+                //     //     const directions = this.state.directions
+                //     //     directions.push(result)
 
-                    //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                //     //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
 
-                    //     this.setState({
-                    //         directions,
-                    //         totalDistance: this.state.totalDistance + distance
-                    //     })
-                    // })
-                }
+                //     //     this.setState({
+                //     //         directions,
+                //     //         totalDistance: this.state.totalDistance + distance
+                //     //     })
+                //     // })
+                // }
             }
+        }
+    }, {
+        key: 'handleSearchPlace',
+        value: function handleSearchPlace(index, location) {
+            var markers = this.state.markers;
+            var points = this.state.points;
+            var m = {
+                pos: location.geometry.location,
+                defaultAnimation: 2,
+                key: Date.now()
+            };
+
+            markers[index] = m;
+            points[index] = [location];
+            this.setState({
+                points: points,
+                markers: markers
+            });
+
+            this.calculateDirections(index, markers);
         }
     }, {
         key: 'onSelectMarkerBox',
@@ -766,6 +801,39 @@ var Home = function (_Component) {
                 boxNum: this.state.boxNum - 1,
                 selectedMarker: selectedMarker
             });
+        }
+    }, {
+        key: 'calculateDirections',
+        value: function calculateDirections(selectedIndex, markers) {
+            var _this5 = this;
+
+            // Direction
+            if (markers.length >= 2) {
+                var DirectionsService = new google.maps.DirectionsService();
+                var directions = this.state.directions;
+
+                if (selectedIndex - 1 >= 0 && markers[selectedIndex - 1] != undefined) {
+                    this.getDerection(markers[selectedIndex - 1], markers[selectedIndex]).then(function (result) {
+                        directions[selectedIndex - 1] = result;
+                        var distance = parseFloat(result.routes[0].legs[0].distance.text);
+                        _this5.setState({
+                            directions: directions,
+                            totalDistance: _this5.getTotalDistanceData(directions).totalDistance
+                        });
+                    });
+                }
+
+                if (selectedIndex + 1 < markers.length && markers[selectedIndex + 1] != undefined) {
+                    this.getDerection(markers[selectedIndex], markers[selectedIndex + 1]).then(function (result) {
+                        directions[selectedIndex] = result;
+                        var distance = parseFloat(result.routes[0].legs[0].distance.text);
+                        _this5.setState({
+                            directions: directions,
+                            totalDistance: _this5.getTotalDistanceData(directions).totalDistance
+                        });
+                    });
+                }
+            }
         }
     }, {
         key: 'getDerection',
@@ -876,7 +944,7 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch, prevState) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Home);
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -898,13 +966,13 @@ var initMap = function initMap() {
 exports.default = initMap;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-google-maps");
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -920,11 +988,15 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(5);
+var _propTypes = __webpack_require__(6);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-__webpack_require__(16);
+var _SearchBox = __webpack_require__(5);
+
+var _SearchBox2 = _interopRequireDefault(_SearchBox);
+
+__webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -969,7 +1041,7 @@ var MarkerBox = function (_Component) {
     }, {
         key: 'render',
         value: function render() {
-            var placeName = this.getPlaceName(this.props.point);
+            // const placeName = this.getPlaceName(this.props.point)
             var removeComponent = { component: "" };
 
             if (this.props.removeable === true) {
@@ -1017,6 +1089,21 @@ var MarkerBox = function (_Component) {
             );
         }
     }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            var _this2 = this;
+
+            var autocomplete = new google.maps.places.Autocomplete(this.refs.findLocation);
+            autocomplete.addListener('place_changed', function () {
+                // console.log(autocomplete.getPlace())
+                // this.setState({
+                //     placeName: autocomplete.getPlace().formatted_address
+                // })
+                // console.log(autocomplete.getPlace().geometry)
+                _this2.props.onSearchPlace(_this2.props.index, autocomplete.getPlace());
+            });
+        }
+    }, {
         key: 'handleChanged',
         value: function handleChanged(n, e) {
             this.setState(_defineProperty({}, n, e.target.value));
@@ -1053,7 +1140,7 @@ MarkerBox.defaultProps = {
 exports.default = MarkerBox;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1067,7 +1154,7 @@ exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-c
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1081,7 +1168,7 @@ exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1099,15 +1186,15 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRedux = __webpack_require__(2);
 
-var _DestinationBox = __webpack_require__(19);
+var _DestinationBox = __webpack_require__(20);
 
 var _DestinationBox2 = _interopRequireDefault(_DestinationBox);
 
-var _OptionPopUp = __webpack_require__(21);
+var _OptionPopUp = __webpack_require__(22);
 
 var _OptionPopUp2 = _interopRequireDefault(_OptionPopUp);
 
-__webpack_require__(23);
+__webpack_require__(24);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1242,7 +1329,7 @@ var OrderDetail = function (_Component) {
                         _react2.default.createElement(
                             'div',
                             { className: 'sum' },
-                            this.props.orderData && this.props.orderData.totalDistance || 0.0,
+                            this.props.orderData && this.props.orderData.totalDistance.toFixed(2) || 0.0,
                             ' KM'
                         )
                     ),
@@ -1257,7 +1344,7 @@ var OrderDetail = function (_Component) {
                         _react2.default.createElement(
                             'div',
                             { className: 'sum' },
-                            this.state.fee,
+                            this.state.fee.toFixed(2),
                             ' THB'
                         )
                     )
@@ -1318,7 +1405,7 @@ var mapStateToProps = function mapStateToProps(state) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps)(OrderDetail);
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1334,11 +1421,11 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _propTypes = __webpack_require__(5);
+var _propTypes = __webpack_require__(6);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-__webpack_require__(20);
+__webpack_require__(21);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1401,7 +1488,7 @@ DestinationBox.propTypes = {
 exports.default = DestinationBox;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1415,7 +1502,7 @@ exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1431,7 +1518,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-__webpack_require__(22);
+__webpack_require__(23);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1611,7 +1698,7 @@ var OptionPopUp = function (_Component) {
 exports.default = OptionPopUp;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1625,7 +1712,7 @@ exports.push([module.i, ".option-pop {\n  display: none;\n  position: fixed;\n  
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);

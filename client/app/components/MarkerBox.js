@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import './markerbox.styl'
 
 class MarkerBox extends Component {
@@ -27,7 +28,7 @@ class MarkerBox extends Component {
     }
     
     render() {
-        const placeName = this.getPlaceName(this.props.point)
+        // const placeName = this.getPlaceName(this.props.point)
         const removeComponent = { component: ""}
 
         if(this.props.removeable === true){
@@ -66,6 +67,19 @@ class MarkerBox extends Component {
             </div>
         );
     }
+
+    componentDidMount() {
+        const autocomplete = new google.maps.places.Autocomplete(this.refs.findLocation)
+        autocomplete.addListener('place_changed', () => {
+            // console.log(autocomplete.getPlace())
+            // this.setState({
+            //     placeName: autocomplete.getPlace().formatted_address
+            // })
+            // console.log(autocomplete.getPlace().geometry)
+            this.props.onSearchPlace(this.props.index, autocomplete.getPlace())
+        })
+    }
+    
 
     handleChanged(n, e){
         this.setState({[n]: e.target.value})

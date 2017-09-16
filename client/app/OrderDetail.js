@@ -105,7 +105,7 @@ class OrderDetail extends Component {
                             Total Distance
                         </div>
                         <div className="sum">
-                            {this.props.orderData && this.props.orderData.totalDistance || 0.0} KM
+                            {this.props.orderData && this.props.orderData.totalDistance.toFixed(2) || 0.0} KM
                         </div>
                     </div>
                     <div className="text-container">
@@ -113,7 +113,7 @@ class OrderDetail extends Component {
                             Fee
                         </div>
                         <div className="sum">
-                            {this.state.fee} THB
+                            {this.state.fee.toFixed(2)} THB
                         </div>
                     </div>
                 </div>

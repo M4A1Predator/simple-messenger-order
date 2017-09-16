@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import initMap from './map/initMap'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
-// import { SearchBox } from 'react-google-maps/lib/places/SearchBox'
+import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import MarkerBox from './components/MarkerBox'
 import './home.styl'
 
@@ -50,7 +50,7 @@ const Gmap = withGoogleMap(props => (
         mapElement={<div style={{ height: '100%' }} />}
         containerElement={<div style={{ height: '100%' }} />}
         onClick={props.onClickMap}
-    >
+    >   
         {displayMarkers(props.markers)}
         {displayDirections(props.directions)}
     </GoogleMap>
@@ -116,6 +116,7 @@ class Home extends Component {
                     removeable={removeable}
                     onSelect={this.onSelectMarkerBox.bind(this)}
                     onRemove={this.removeMarkerBox.bind(this, i)}
+                    onSearchPlace={this.handleSearchPlace.bind(this)}
                 />
             )
         }
@@ -153,11 +154,12 @@ class Home extends Component {
                     />
                 </div>
                 <div className="total-box">
-                    <div className="total-text">Total {this.state.totalDistance + " KM"}</div>
+                    <div className="total-text">Total {this.state.totalDistance.toFixed(2) + " KM"}</div>
                     <div className="btn-container">
                         <button onClick={this.order.bind(this)}>Next</button>
                     </div>    
                 </div>
+                
             </div>
         );
     }
@@ -189,15 +191,14 @@ class Home extends Component {
         .catch(err => {
             this.setState({pos: this.state.pos, isShowGmap: true})
         })
-
     }
     
-    handleMapLoad(map){
-        
+    handleMapLoad(ref){
+        // this.refs.map = ref;
     }
 
     handleMapClick(e){
-        
+
         if(this.state.selectedMarker >= 0){
             const m = {
                 pos: e.latLng,
@@ -226,55 +227,76 @@ class Home extends Component {
                 })
             }).then(results => {
                 const points = this.state.points
+                console.log(results)
                 points[this.state.selectedMarker] = results
                 this.setState({points})
             })
             
             // Direction
-            if(markers.length >= 2){
-                const DirectionsService = new google.maps.DirectionsService();
-                const markers = this.state.markers
-                const directions = this.state.directions
+            this.calculateDirections(this.state.selectedMarker, markers)
+            // if(markers.length >= 2){
+            //     const DirectionsService = new google.maps.DirectionsService();
+            //     const markers = this.state.markers
+            //     const directions = this.state.directions
                 
-                if(this.state.selectedMarker - 1 >= 0 && markers[this.state.selectedMarker - 1] != undefined){
-                    this.getDerection(markers[this.state.selectedMarker - 1], markers[this.state.selectedMarker])
-                    .then( result => {
-                        directions[this.state.selectedMarker - 1] = result
-                        const distance = parseFloat(result.routes[0].legs[0].distance.text)
-                        this.setState({
-                            directions,
-                            totalDistance : this.getTotalDistanceData(directions).totalDistance
-                        })
-                    })
-                }
+            //     if(this.state.selectedMarker - 1 >= 0 && markers[this.state.selectedMarker - 1] != undefined){
+            //         this.getDerection(markers[this.state.selectedMarker - 1], markers[this.state.selectedMarker])
+            //         .then( result => {
+            //             directions[this.state.selectedMarker - 1] = result
+            //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
+            //             this.setState({
+            //                 directions,
+            //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
+            //             })
+            //         })
+            //     }
 
-                if(this.state.selectedMarker + 1 < markers.length && markers[this.state.selectedMarker + 1] != undefined){
-                    this.getDerection(markers[this.state.selectedMarker], markers[this.state.selectedMarker + 1])
-                    .then( result => {
-                        directions[this.state.selectedMarker] = result
-                        const distance = parseFloat(result.routes[0].legs[0].distance.text)
-                        this.setState({
-                            directions,
-                            totalDistance : this.getTotalDistanceData(directions).totalDistance
-                        })
-                    })
-                }
+            //     if(this.state.selectedMarker + 1 < markers.length && markers[this.state.selectedMarker + 1] != undefined){
+            //         this.getDerection(markers[this.state.selectedMarker], markers[this.state.selectedMarker + 1])
+            //         .then( result => {
+            //             directions[this.state.selectedMarker] = result
+            //             const distance = parseFloat(result.routes[0].legs[0].distance.text)
+            //             this.setState({
+            //                 directions,
+            //                 totalDistance : this.getTotalDistanceData(directions).totalDistance
+            //             })
+            //         })
+            //     }
                 
-                // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
-                // .then( result => {
+            //     // this.getDerection(markers[markers.length - 2], markers[markers.length - 1])
+            //     // .then( result => {
 
-                //     const directions = this.state.directions
-                //     directions.push(result)
+            //     //     const directions = this.state.directions
+            //     //     directions.push(result)
 
-                //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
+            //     //     const distance = parseFloat(result.routes[0].legs[0].distance.text)
 
-                //     this.setState({
-                //         directions,
-                //         totalDistance: this.state.totalDistance + distance
-                //     })
-                // })
-            }
+            //     //     this.setState({
+            //     //         directions,
+            //     //         totalDistance: this.state.totalDistance + distance
+            //     //     })
+            //     // })
+            // }
         }
+    }
+
+    handleSearchPlace(index, location){
+        const markers = this.state.markers;
+        const points = this.state.points
+        const m = {
+            pos: location.geometry.location,
+            defaultAnimation: 2,
+            key: Date.now(),
+        }
+        
+        markers[index] = m
+        points[index] = [location]
+        this.setState({
+            points,
+            markers
+        })
+
+        this.calculateDirections(index, markers)
     }
 
     onSelectMarkerBox(e){
@@ -326,6 +348,38 @@ class Home extends Component {
             boxNum: this.state.boxNum - 1,
             selectedMarker
         })
+    }
+
+    calculateDirections(selectedIndex, markers){
+        // Direction
+        if(markers.length >= 2){
+            const DirectionsService = new google.maps.DirectionsService();
+            const directions = this.state.directions
+            
+            if(selectedIndex - 1 >= 0 && markers[selectedIndex - 1] != undefined){
+                this.getDerection(markers[selectedIndex - 1], markers[selectedIndex])
+                .then( result => {
+                    directions[selectedIndex - 1] = result
+                    const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                    this.setState({
+                        directions,
+                        totalDistance : this.getTotalDistanceData(directions).totalDistance
+                    })
+                })
+            }
+
+            if(selectedIndex + 1 < markers.length && markers[selectedIndex + 1] != undefined){
+                this.getDerection(markers[selectedIndex], markers[selectedIndex + 1])
+                .then( result => {
+                    directions[selectedIndex] = result
+                    const distance = parseFloat(result.routes[0].legs[0].distance.text)
+                    this.setState({
+                        directions,
+                        totalDistance : this.getTotalDistanceData(directions).totalDistance
+                    })
+                })
+            }
+        }
     }
 
     getDerection(start, end){
