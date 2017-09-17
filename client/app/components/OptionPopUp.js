@@ -14,6 +14,13 @@ class OptionPopUp extends Component {
         this.closeByClick = this.closeByClick.bind(this)
     }
 
+    
+    componentWillMount() {
+        if(this.props.options != undefined){
+            this.setState({options: this.props.options})
+        }
+    }
+    
     componentDidMount(){
         window.addEventListener("mousedown", this.closeByClick);
     }

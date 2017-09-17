@@ -302,6 +302,9 @@ var appReducers = function appReducers() {
         case 'ORDER':
             state = action.data;
             break;
+        case 'ORDER_EXTRA':
+            state.options = action.data;
+            break;
         case 'CLEAR':
             state = null;
             break;
@@ -424,8 +427,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-// import SearchBox from "react-google-maps/lib/components/places/SearchBox";
-
 
 var displayMarkers = function displayMarkers(markers) {
     return markers.map(function (marker, i) {
@@ -649,7 +650,6 @@ var Home = function (_Component) {
                 _this2.setState({ pos: _this2.state.pos, isShowGmap: true });
             });
             // new google.maps.places.PlacesService();
-            // console.log(this.refs.gmap)
         }
     }, {
         key: 'handleMapLoad',
@@ -897,7 +897,7 @@ var Home = function (_Component) {
                 var nameData = (0, _PlaceUtils.getPlaceName)(points[i]);
                 var dest = {
                     marker: markers[i],
-                    point: points[i],
+                    point: [points[i][0]],
                     placeName: nameData
                 };
                 dests.push(dest);
@@ -912,8 +912,13 @@ var Home = function (_Component) {
                 directions: this.state.directions,
                 totalDistance: this.state.totalDistance
 
-                // Redirect
-            };this.props.order(data);
+                // get option data
+            };if (this.props.orderData != undefined && this.props.orderData.options != undefined) {
+                data.options = this.props.orderData.options;
+            }
+
+            // Redirect
+            this.props.order(data);
             this.props.history.push('/orderDetail');
         }
     }]);
@@ -1028,6 +1033,7 @@ var MarkerBox = function (_Component) {
         value: function render() {
             // const placeName = this.getPlaceName(this.props.point)
             var removeComponent = { component: "" };
+            var intStyle = {};
 
             if (this.props.removeable === true) {
                 removeComponent.component = _react2.default.createElement(
@@ -1039,9 +1045,9 @@ var MarkerBox = function (_Component) {
                         _react2.default.createElement('img', { className: 'icon', width: '20px', height: '20px', src: '/public/mats/img/minus-sign-inside-a-black-circle.svg' })
                     )
                 );
+                intStyle.width = "calc(100% - 30px)";
             }
 
-            var intStyle = {};
             if (this.props.isSelected === true) {
                 intStyle.backgroundColor = "#e1f4fc";
             }
@@ -1129,7 +1135,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: calc(100% - 35px);\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: calc(100% - 25px);\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
+exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: calc(100% - 35px);\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
 
 // exports
 
@@ -1222,7 +1228,16 @@ var OrderDetail = function (_Component) {
     _createClass(OrderDetail, [{
         key: 'componentWillMount',
         value: function componentWillMount() {
-            this.setState({ fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0, this.state.services) });
+            var services = this.state.services;
+            if (this.props.orderData != undefined && this.props.orderData.options != undefined) {
+                for (var i = 0; i < services.length; i++) {
+                    services[i].isSelect = this.props.orderData.options[i];
+                }
+            }
+            // this.setState({fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0,
+            //     this.state.services)})
+            this.setState({ services: services });
+            this.setState({ fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0, services) });
         }
     }, {
         key: 'displayDests',
@@ -1245,7 +1260,7 @@ var OrderDetail = function (_Component) {
                 return _react2.default.createElement(
                     'div',
                     { className: 'option-icon', key: i },
-                    _react2.default.createElement('img', { src: s.imgSrc })
+                    _react2.default.createElement('img', { style: { width: "30px", height: "30px" }, src: s.imgSrc })
                 );
             });
         }
@@ -1269,7 +1284,7 @@ var OrderDetail = function (_Component) {
         value: function render() {
             return _react2.default.createElement(
                 'div',
-                { className: 'container order-detail' },
+                { className: 'order-detail' },
                 _react2.default.createElement(
                     'div',
                     { className: 'destination-container' },
@@ -1350,7 +1365,11 @@ var OrderDetail = function (_Component) {
                         'Confirm'
                     )
                 ),
-                _react2.default.createElement(_OptionPopUp2.default, { onConfirm: this.onConfirmExtra.bind(this), isShow: this.state.isShowPopUp })
+                _react2.default.createElement(_OptionPopUp2.default, {
+                    onConfirm: this.onConfirmExtra.bind(this),
+                    isShow: this.state.isShowPopUp,
+                    options: this.props.orderData && this.props.orderData.options || undefined
+                })
             );
         }
     }, {
@@ -1372,6 +1391,7 @@ var OrderDetail = function (_Component) {
                 isShowPopUp: false,
                 fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0, services)
             });
+            this.props.orderExtra(options);
         }
     }, {
         key: 'backToMap',
@@ -1402,6 +1422,13 @@ var mapDisPatchToProps = function mapDisPatchToProps(dispatch) {
                 type: 'CLEAR'
             };
 
+            dispatch(action);
+        },
+        orderExtra: function orderExtra(options) {
+            var action = {
+                type: 'ORDER_EXTRA',
+                data: options
+            };
             dispatch(action);
         }
     };
@@ -1538,7 +1565,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n.destination-box .location-box .icon img {\n  width: 19px;\n  height: 19px;\n}\n.destination-box .location-box .location-name name {\n  font-size: 20px;\n}\n.destination-box .order-form {\n  display: flex;\n  padding: 0 0 0 10px;\n}\n.destination-box .order-form input {\n  margin: 0 5px 0 0;\n}\n", ""]);
+exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n.destination-box .location-box .icon img {\n  width: 19px;\n  height: 19px;\n}\n.destination-box .location-box .location-name .name {\n  font-size: 1.2em;\n}\n.destination-box .order-form {\n  display: flex;\n  padding: 0 0 0 10px;\n}\n.destination-box .order-form input {\n  height: 26px;\n  margin: 0 5px 0 0;\n}\n", ""]);
 
 // exports
 
@@ -1588,6 +1615,13 @@ var OptionPopUp = function (_Component) {
     }
 
     _createClass(OptionPopUp, [{
+        key: 'componentWillMount',
+        value: function componentWillMount() {
+            if (this.props.options != undefined) {
+                this.setState({ options: this.props.options });
+            }
+        }
+    }, {
         key: 'componentDidMount',
         value: function componentDidMount() {
             window.addEventListener("mousedown", this.closeByClick);
@@ -1759,7 +1793,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".order-detail {\n  width: 100%;\n  margin-top: 20px;\n}\n.container {\n  display: table;\n}\n@media (min-width: 960px) {\n  .container {\n    width: 960px;\n  }\n}\n.container .destination-container {\n  padding: 5px 5px;\n}\n.container .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.container .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.container .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.container .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.container .option-box .head .icon {\n  cursor: pointer;\n}\n.container .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.container .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.container .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.container .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.container .detail-box {\n  margin: 50px 0 0 0;\n}\n.container .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.container .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.container .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.container .button-box {\n  text-align: center;\n}\n.container .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.container .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
+exports.push([module.i, ".order-detail {\n  display: table;\n  margin: 20px auto 0 auto;\n}\n@media (min-width: 960px) {\n  .order-detail {\n    width: 960px;\n  }\n}\n.order-detail .destination-container {\n  padding: 5px 5px;\n}\n.order-detail .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.order-detail .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.order-detail .option-box {\n  margin: 0 15px;\n}\n.order-detail .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.order-detail .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.order-detail .option-box .head .icon {\n  cursor: pointer;\n}\n.order-detail .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.order-detail .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.order-detail .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.order-detail .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.order-detail .detail-box {\n  margin: 50px 15px 0 15px;\n}\n.order-detail .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.order-detail .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.order-detail .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.order-detail .button-box {\n  text-align: center;\n}\n.order-detail .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.order-detail .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 

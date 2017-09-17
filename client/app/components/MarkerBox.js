@@ -33,6 +33,7 @@ class MarkerBox extends Component {
     render() {
         // const placeName = this.getPlaceName(this.props.point)
         const removeComponent = { component: "" }
+        const intStyle = {}
 
         if(this.props.removeable === true){
             removeComponent.component = (
@@ -42,9 +43,9 @@ class MarkerBox extends Component {
                     </a>
                 </div>
             )
+            intStyle.width = "calc(100% - 30px)"
         }
 
-        const intStyle = {}
         if(this.props.isSelected === true){
             intStyle.backgroundColor="#e1f4fc"
         }

@@ -32,12 +32,19 @@ class OrderDetail extends Component {
         }
     }
 
-    
     componentWillMount() {
+        const services = this.state.services
+        if(this.props.orderData != undefined && this.props.orderData.options != undefined){
+            for(let i=0;i<services.length;i++){
+                services[i].isSelect = this.props.orderData.options[i]
+            }
+        }
+        // this.setState({fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0,
+        //     this.state.services)})
+        this.setState({services})
         this.setState({fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0,
-            this.state.services)})
+            services)})
     }
-    
 
     displayDests(dests){
         return dests.map((dest, i) => {
@@ -58,7 +65,7 @@ class OrderDetail extends Component {
 
             return (
                 <div className="option-icon" key={i}>
-                    <img src={s.imgSrc}/>
+                    <img style={{width: "30px", height:"30px"}} src={s.imgSrc}/>
                 </div>
             )
         })
@@ -80,7 +87,7 @@ class OrderDetail extends Component {
 
     render() {
         return (
-            <div className="container order-detail">
+            <div className="order-detail">
                 <div className="destination-container">
                     {this.props.orderData && this.displayDests(this.props.orderData.dests)}
                 </div>
@@ -121,7 +128,11 @@ class OrderDetail extends Component {
                     <button onClick={this.backToMap.bind(this)} className="back-btn">Back</button>
                     <button onClick={this.confirmOrder.bind(this)} className="confirm-btn">Confirm</button>
                 </div>
-                <OptionPopUp onConfirm={this.onConfirmExtra.bind(this)} isShow={this.state.isShowPopUp} />
+                <OptionPopUp 
+                    onConfirm={this.onConfirmExtra.bind(this)} 
+                    isShow={this.state.isShowPopUp} 
+                    options={this.props.orderData && this.props.orderData.options || undefined}
+                />
             </div>
         );
     }
@@ -142,6 +153,7 @@ class OrderDetail extends Component {
             isShowPopUp: false,
             fee: this.getFee(this.props.orderData && this.props.orderData.totalDistance || 0.0, services)
         })
+        this.props.orderExtra(options)
     }
 
     backToMap(e){
@@ -167,6 +179,13 @@ const mapDisPatchToProps = (dispatch) => {
                 type: 'CLEAR'
             }
 
+            dispatch(action)
+        },
+        orderExtra : (options) => {
+            const action = {
+                type: 'ORDER_EXTRA',
+                data: options
+            }
             dispatch(action)
         }
     }

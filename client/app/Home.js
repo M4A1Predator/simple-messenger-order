@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
-// import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import MarkerBox from './components/MarkerBox'
 import { getPlaceName } from './helpers/PlaceUtils'
 import axios from 'axios'
@@ -205,7 +204,6 @@ class Home extends Component {
             this.setState({pos: this.state.pos, isShowGmap: true})
         })
         // new google.maps.places.PlacesService();
-        // console.log(this.refs.gmap)
     }
     
     handleMapLoad(ref){
@@ -439,7 +437,7 @@ class Home extends Component {
             const nameData = getPlaceName(points[i])
             const dest = {
                 marker : markers[i],
-                point : points[i],
+                point : [points[i][0]],
                 placeName : nameData
             }
             dests.push(dest)
@@ -453,6 +451,11 @@ class Home extends Component {
             dests,
             directions: this.state.directions,
             totalDistance: this.state.totalDistance
+        }
+
+        // get option data
+        if(this.props.orderData != undefined && this.props.orderData.options != undefined){
+            data.options = this.props.orderData.options;
         }
 
         // Redirect
