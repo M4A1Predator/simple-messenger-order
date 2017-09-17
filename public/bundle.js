@@ -35223,6 +35223,9 @@ var Home = function (_Component) {
                             directions: directions,
                             totalDistance: _this5.getTotalDistanceData(directions).totalDistance
                         });
+                    }).catch(function (err) {
+                        markers.splice(selectedIndex, 1);
+                        _this5.setState({ markers: markers });
                     });
                 }
 
@@ -35234,6 +35237,9 @@ var Home = function (_Component) {
                             directions: directions,
                             totalDistance: _this5.getTotalDistanceData(directions).totalDistance
                         });
+                    }).catch(function (err) {
+                        markers.splice(selectedIndex, 1);
+                        _this5.setState({ markers: markers });
                     });
                 }
             }

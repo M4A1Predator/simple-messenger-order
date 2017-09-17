@@ -361,6 +361,10 @@ class Home extends Component {
                         totalDistance : this.getTotalDistanceData(directions).totalDistance
                     })
                 })
+                .catch(err => {
+                    markers.splice(selectedIndex, 1)
+                    this.setState({markers})
+                })
             }
 
             if(selectedIndex + 1 < markers.length && markers[selectedIndex + 1] != undefined){
@@ -372,6 +376,10 @@ class Home extends Component {
                         directions,
                         totalDistance : this.getTotalDistanceData(directions).totalDistance
                     })
+                })
+                .catch(err => {
+                    markers.splice(selectedIndex, 1)
+                    this.setState({markers})
                 })
             }
         }
