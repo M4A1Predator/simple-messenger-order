@@ -217,7 +217,6 @@ class Home extends Component {
     }
 
     handleMapClick(e){
-        
         if(this.state.selectedMarker >= 0){
             const m = {
                 pos: e.latLng,
@@ -247,6 +246,7 @@ class Home extends Component {
                         return;
                     }
                     // geocoder.geocode({'placeId': results[0].place_id}, function(results, status){
+                    //     console.log(results)
                     //     if(status != google.maps.GeocoderStatus.OK){
                     //         return;
                     //     }

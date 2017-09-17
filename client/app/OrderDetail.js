@@ -28,7 +28,8 @@ class OrderDetail extends Component {
                     imgSrc: '/public/mats/img/closed-cardboard-box.svg'
                 },
             ],
-            fee : 0.0
+            fee : 0.0,
+            contacts : []
         }
     }
 
@@ -50,8 +51,10 @@ class OrderDetail extends Component {
         return dests.map((dest, i) => {
             return (
                 <DestinationBox 
+                    index={i}
                     dest={dest}
                     key={i}
+                    onChange={this.handleContactChange.bind(this)}
                 />
             )
         })
@@ -137,6 +140,12 @@ class OrderDetail extends Component {
         );
     }
 
+    handleContactChange(contactData, index){
+        const contacts = this.state.contacts
+        contacts[index] = contactData
+        this.setState({contacts})
+    }
+
     showOptionPopUp(e){
         this.setState({
             isShowPopUp: true
@@ -161,6 +170,24 @@ class OrderDetail extends Component {
     }
 
     confirmOrder(e){
+        // Check contact
+        const contacts = this.state.contacts
+        if(contacts.length === 0){
+            alert("Please fill all contact name and phone number");
+            return;
+        }
+        for(let i=0;i<this.props.orderData.dests.length;i++){
+            if(contacts[i] == undefined){
+                alert("Please fill all contact name and phone number");
+                return;
+            }
+
+            if(contacts[i].name.trim() == '' || contacts[i].mobile.trim() == ''){
+                alert("Please fill all contact name and phone number");
+                return;
+            }
+        }
+
         this.props.order();
         this.props.history.goBack();
     }

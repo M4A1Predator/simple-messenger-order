@@ -7,7 +7,9 @@ class DestinationBox extends Component {
     constructor(props){
         super(props)
         this.state = {
-            placeName: ''
+            placeName: '',
+            name: '',
+            mobile: '',
         }
     }
 
@@ -23,9 +25,7 @@ class DestinationBox extends Component {
         }
 
         this.setState({placeName})
-    }
-
-    // {this.props.dest.placeName || this.props.key}
+    } 
 
     render() {
         let placeName = ''
@@ -47,16 +47,32 @@ class DestinationBox extends Component {
                     </div>
                 </div>
                 <div className="order-form">
-                    <input type="text" placeholder="name" />
-                    <input type="text" placeholder="mobile" />
+                    <input onChange={this.handleChange.bind(this, "name")} value={this.state.name} type="text" placeholder="name" />
+                    <input onChange={this.handleChange.bind(this, "mobile")} value={this.state.mobile} type="text" placeholder="mobile" />
                 </div>
             </div>
         );
     }
+
+    handleChange(name, e){
+
+        const data = {
+            name : this.state.name,
+            mobile : this.state.mobile
+        }
+
+        data[name] = e.target.value;
+        this.setState({
+            name: data.name,
+            mobile: data.mobile
+        })
+        this.props.onChange(data, this.props.index);
+    }
 }
 
 DestinationBox.propTypes = {
-    dest : PropTypes.object
+    dest : PropTypes.object,
+    index : PropTypes.number.isRequired
 }
 
 export default DestinationBox;

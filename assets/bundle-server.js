@@ -726,6 +726,7 @@ var Home = function (_Component) {
                             return;
                         }
                         // geocoder.geocode({'placeId': results[0].place_id}, function(results, status){
+                        //     console.log(results)
                         //     if(status != google.maps.GeocoderStatus.OK){
                         //         return;
                         //     }
@@ -1263,7 +1264,8 @@ var OrderDetail = function (_Component) {
                 price: 200,
                 imgSrc: '/public/mats/img/closed-cardboard-box.svg'
             }],
-            fee: 0.0
+            fee: 0.0,
+            contacts: []
         };
         return _this;
     }
@@ -1285,10 +1287,14 @@ var OrderDetail = function (_Component) {
     }, {
         key: 'displayDests',
         value: function displayDests(dests) {
+            var _this2 = this;
+
             return dests.map(function (dest, i) {
                 return _react2.default.createElement(_DestinationBox2.default, {
+                    index: i,
                     dest: dest,
-                    key: i
+                    key: i,
+                    onChange: _this2.handleContactChange.bind(_this2)
                 });
             });
         }
@@ -1416,6 +1422,13 @@ var OrderDetail = function (_Component) {
             );
         }
     }, {
+        key: 'handleContactChange',
+        value: function handleContactChange(contactData, index) {
+            var contacts = this.state.contacts;
+            contacts[index] = contactData;
+            this.setState({ contacts: contacts });
+        }
+    }, {
         key: 'showOptionPopUp',
         value: function showOptionPopUp(e) {
             this.setState({
@@ -1444,6 +1457,24 @@ var OrderDetail = function (_Component) {
     }, {
         key: 'confirmOrder',
         value: function confirmOrder(e) {
+            // Check contact
+            var contacts = this.state.contacts;
+            if (contacts.length === 0) {
+                alert("Please fill all contact name and phone number");
+                return;
+            }
+            for (var i = 0; i < this.props.orderData.dests.length; i++) {
+                if (contacts[i] == undefined) {
+                    alert("Please fill all contact name and phone number");
+                    return;
+                }
+
+                if (contacts[i].name.trim() == '' || contacts[i].mobile.trim() == '') {
+                    alert("Please fill all contact name and phone number");
+                    return;
+                }
+            }
+
             this.props.order();
             this.props.history.goBack();
         }
@@ -1519,7 +1550,9 @@ var DestinationBox = function (_Component) {
         var _this = _possibleConstructorReturn(this, (DestinationBox.__proto__ || Object.getPrototypeOf(DestinationBox)).call(this, props));
 
         _this.state = {
-            placeName: ''
+            placeName: '',
+            name: '',
+            mobile: ''
         };
         return _this;
     }
@@ -1539,9 +1572,6 @@ var DestinationBox = function (_Component) {
 
             this.setState({ placeName: placeName });
         }
-
-        // {this.props.dest.placeName || this.props.key}
-
     }, {
         key: 'render',
         value: function render() {
@@ -1583,10 +1613,26 @@ var DestinationBox = function (_Component) {
                 _react2.default.createElement(
                     'div',
                     { className: 'order-form' },
-                    _react2.default.createElement('input', { type: 'text', placeholder: 'name' }),
-                    _react2.default.createElement('input', { type: 'text', placeholder: 'mobile' })
+                    _react2.default.createElement('input', { onChange: this.handleChange.bind(this, "name"), value: this.state.name, type: 'text', placeholder: 'name' }),
+                    _react2.default.createElement('input', { onChange: this.handleChange.bind(this, "mobile"), value: this.state.mobile, type: 'text', placeholder: 'mobile' })
                 )
             );
+        }
+    }, {
+        key: 'handleChange',
+        value: function handleChange(name, e) {
+
+            var data = {
+                name: this.state.name,
+                mobile: this.state.mobile
+            };
+
+            data[name] = e.target.value;
+            this.setState({
+                name: data.name,
+                mobile: data.mobile
+            });
+            this.props.onChange(data, this.props.index);
         }
     }]);
 
@@ -1594,7 +1640,8 @@ var DestinationBox = function (_Component) {
 }(_react.Component);
 
 DestinationBox.propTypes = {
-    dest: _propTypes2.default.object
+    dest: _propTypes2.default.object,
+    index: _propTypes2.default.number.isRequired
 };
 
 exports.default = DestinationBox;
