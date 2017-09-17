@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { withGoogleMap, GoogleMap, Marker, DirectionsRenderer } from "react-google-maps";
 // import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import MarkerBox from './components/MarkerBox'
+import { getPlaceName } from './helpers/PlaceUtils'
 import axios from 'axios'
 import './home.styl'
 
@@ -204,7 +205,7 @@ class Home extends Component {
             this.setState({pos: this.state.pos, isShowGmap: true})
         })
         // new google.maps.places.PlacesService();
-        console.log(this.refs.gmap)
+        // console.log(this.refs.gmap)
     }
     
     handleMapLoad(ref){
@@ -245,7 +246,6 @@ class Home extends Component {
                     //         return;
                     //     }
                     // })
-                    console.log(results)
                     resolve(results)
                 })
             }).then(results => {
@@ -269,10 +269,12 @@ class Home extends Component {
         }
         
         markers[index] = m
+        const pos = {lat:m.pos.lat(), lng:m.pos.lng()}
         points[index] = [location]
         this.setState({
             points,
-            markers
+            markers,
+            pos
         })
 
         this.calculateDirections(index, markers)
@@ -309,8 +311,11 @@ class Home extends Component {
         }else if(index == markers.length - 1){
             directions.splice(directions.length - 1, 1)
             selectedMarker = this.state.selectedMarker - 1
+            this.setState({
+                totalDistance : this.getTotalDistanceData(directions).totalDistance
+            })
         }else{
-            this.getDerection(markers[index - 1], markers[index + 1])
+            this.getDirection(markers[index - 1], markers[index + 1])
             .then(result => {
                 directions[index - 1] = result
                 directions.splice(index, 1) 
@@ -342,7 +347,7 @@ class Home extends Component {
             const directions = this.state.directions
             
             if(selectedIndex - 1 >= 0 && markers[selectedIndex - 1] != undefined){
-                this.getDerection(markers[selectedIndex - 1], markers[selectedIndex])
+                this.getDirection(markers[selectedIndex - 1], markers[selectedIndex])
                 .then( result => {
                     directions[selectedIndex - 1] = result
                     const distance = parseFloat(result.routes[0].legs[0].distance.text)
@@ -354,7 +359,7 @@ class Home extends Component {
             }
 
             if(selectedIndex + 1 < markers.length && markers[selectedIndex + 1] != undefined){
-                this.getDerection(markers[selectedIndex], markers[selectedIndex + 1])
+                this.getDirection(markers[selectedIndex], markers[selectedIndex + 1])
                 .then( result => {
                     directions[selectedIndex] = result
                     const distance = parseFloat(result.routes[0].legs[0].distance.text)
@@ -367,7 +372,7 @@ class Home extends Component {
         }
     }
 
-    getDerection(start, end){
+    getDirection(start, end){
         return new Promise( (resolve, reject) => {
             if(start == undefined || end == undefined){
                 reject("Undefined point")
@@ -409,6 +414,18 @@ class Home extends Component {
         return data
     }
 
+    getPlaceName(results){
+        if(results == undefined || results.length == 0){
+            return '';
+        }
+
+        if(results[0].name != undefined){
+            return results[0].name + ' - ' + results[0].formatted_address
+        }
+        
+        return results[0].formatted_address
+    }
+
     order(e){
         // Get data
         const points = this.state.points
@@ -419,16 +436,11 @@ class Home extends Component {
             if(points[i] == undefined || markers[i] == undefined){
                 continue;
             }
-
-            let placeName = points[i][0].formatted_address
-            if(placeName == undefined){
-                placeName = markers[i].getPosition().lat() + " " + markers[i].getPosition().lng();
-            }
-
+            const nameData = getPlaceName(points[i])
             const dest = {
                 marker : markers[i],
                 point : points[i],
-                placeName : placeName
+                placeName : nameData
             }
             dests.push(dest)
         }

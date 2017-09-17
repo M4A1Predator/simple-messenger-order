@@ -340,7 +340,7 @@ var _Home = __webpack_require__(12);
 
 var _Home2 = _interopRequireDefault(_Home);
 
-var _OrderDetail = __webpack_require__(19);
+var _OrderDetail = __webpack_require__(20);
 
 var _OrderDetail2 = _interopRequireDefault(_OrderDetail);
 
@@ -395,7 +395,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDom = __webpack_require__(26);
+var _reactDom = __webpack_require__(13);
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
@@ -409,11 +409,13 @@ var _MarkerBox = __webpack_require__(15);
 
 var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
 
-var _axios = __webpack_require__(25);
+var _PlaceUtils = __webpack_require__(26);
+
+var _axios = __webpack_require__(18);
 
 var _axios2 = _interopRequireDefault(_axios);
 
-__webpack_require__(18);
+__webpack_require__(19);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -647,7 +649,7 @@ var Home = function (_Component) {
                 _this2.setState({ pos: _this2.state.pos, isShowGmap: true });
             });
             // new google.maps.places.PlacesService();
-            console.log(this.refs.gmap);
+            // console.log(this.refs.gmap)
         }
     }, {
         key: 'handleMapLoad',
@@ -692,7 +694,6 @@ var Home = function (_Component) {
                         //         return;
                         //     }
                         // })
-                        console.log(results);
                         resolve(results);
                     });
                 }).then(function (results) {
@@ -717,10 +718,12 @@ var Home = function (_Component) {
             };
 
             markers[index] = m;
+            var pos = { lat: m.pos.lat(), lng: m.pos.lng() };
             points[index] = [location];
             this.setState({
                 points: points,
-                markers: markers
+                markers: markers,
+                pos: pos
             });
 
             this.calculateDirections(index, markers);
@@ -762,8 +765,11 @@ var Home = function (_Component) {
             } else if (index == markers.length - 1) {
                 directions.splice(directions.length - 1, 1);
                 selectedMarker = this.state.selectedMarker - 1;
+                this.setState({
+                    totalDistance: this.getTotalDistanceData(directions).totalDistance
+                });
             } else {
-                this.getDerection(markers[index - 1], markers[index + 1]).then(function (result) {
+                this.getDirection(markers[index - 1], markers[index + 1]).then(function (result) {
                     directions[index - 1] = result;
                     directions.splice(index, 1);
                     _this4.setState({
@@ -797,7 +803,7 @@ var Home = function (_Component) {
                 var directions = this.state.directions;
 
                 if (selectedIndex - 1 >= 0 && markers[selectedIndex - 1] != undefined) {
-                    this.getDerection(markers[selectedIndex - 1], markers[selectedIndex]).then(function (result) {
+                    this.getDirection(markers[selectedIndex - 1], markers[selectedIndex]).then(function (result) {
                         directions[selectedIndex - 1] = result;
                         var distance = parseFloat(result.routes[0].legs[0].distance.text);
                         _this5.setState({
@@ -808,7 +814,7 @@ var Home = function (_Component) {
                 }
 
                 if (selectedIndex + 1 < markers.length && markers[selectedIndex + 1] != undefined) {
-                    this.getDerection(markers[selectedIndex], markers[selectedIndex + 1]).then(function (result) {
+                    this.getDirection(markers[selectedIndex], markers[selectedIndex + 1]).then(function (result) {
                         directions[selectedIndex] = result;
                         var distance = parseFloat(result.routes[0].legs[0].distance.text);
                         _this5.setState({
@@ -820,8 +826,8 @@ var Home = function (_Component) {
             }
         }
     }, {
-        key: 'getDerection',
-        value: function getDerection(start, end) {
+        key: 'getDirection',
+        value: function getDirection(start, end) {
             return new Promise(function (resolve, reject) {
                 if (start == undefined || end == undefined) {
                     reject("Undefined point");
@@ -864,6 +870,19 @@ var Home = function (_Component) {
             return data;
         }
     }, {
+        key: 'getPlaceName',
+        value: function getPlaceName(results) {
+            if (results == undefined || results.length == 0) {
+                return '';
+            }
+
+            if (results[0].name != undefined) {
+                return results[0].name + ' - ' + results[0].formatted_address;
+            }
+
+            return results[0].formatted_address;
+        }
+    }, {
         key: 'order',
         value: function order(e) {
             // Get data
@@ -875,16 +894,11 @@ var Home = function (_Component) {
                 if (points[i] == undefined || markers[i] == undefined) {
                     continue;
                 }
-
-                var placeName = points[i][0].formatted_address;
-                if (placeName == undefined) {
-                    placeName = markers[i].getPosition().lat() + " " + markers[i].getPosition().lng();
-                }
-
+                var nameData = (0, _PlaceUtils.getPlaceName)(points[i]);
                 var dest = {
                     marker: markers[i],
                     point: points[i],
-                    placeName: placeName
+                    placeName: nameData
                 };
                 dests.push(dest);
             }
@@ -928,7 +942,12 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch, prevState) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Home);
 
 /***/ }),
-/* 13 */,
+/* 13 */
+/***/ (function(module, exports) {
+
+module.exports = require("react-dom");
+
+/***/ }),
 /* 14 */
 /***/ (function(module, exports) {
 
@@ -959,6 +978,8 @@ var _SearchBox = __webpack_require__(16);
 
 var _SearchBox2 = _interopRequireDefault(_SearchBox);
 
+var _PlaceUtils = __webpack_require__(26);
+
 __webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -980,23 +1001,24 @@ var MarkerBox = function (_Component) {
         var _this = _possibleConstructorReturn(this, (MarkerBox.__proto__ || Object.getPrototypeOf(MarkerBox)).call(this, props));
 
         _this.state = {
-            placeName: 'test'
+            placeName: ''
         };
         return _this;
     }
 
     _createClass(MarkerBox, [{
-        key: 'componentWillMount',
-        value: function componentWillMount() {
-            var placeName = this.getPlaceName(this.props.point);
-            this.setState({
-                placeName: placeName
-            });
-        }
-    }, {
         key: 'componentWillReceiveProps',
         value: function componentWillReceiveProps(nextProps) {
-            var placeName = this.getPlaceName(nextProps.point);
+            var nameData = (0, _PlaceUtils.getPlaceName)(nextProps.point);
+            var placeName = '';
+            if (nameData.name != null) {
+                placeName += nameData.name + ' - ';
+            }
+
+            if (nameData.address != null) {
+                placeName += nameData.address;
+            }
+
             this.setState({
                 placeName: placeName
             });
@@ -1058,7 +1080,6 @@ var MarkerBox = function (_Component) {
 
             var autocomplete = new google.maps.places.Autocomplete(this.refs.findLocation);
             autocomplete.addListener('place_changed', function () {
-                console.log(autocomplete.getPlace());
                 // this.setState({
                 //     placeName: autocomplete.getPlace().formatted_address
                 // })
@@ -1075,19 +1096,6 @@ var MarkerBox = function (_Component) {
         key: 'onSelect',
         value: function onSelect() {
             this.props.onSelect(this.props.index);
-        }
-    }, {
-        key: 'getPlaceName',
-        value: function getPlaceName(results) {
-            if (results == undefined || results.length == 0) {
-                return '';
-            }
-
-            if (results[0].name != undefined) {
-                return results[0].name + ' - ' + results[0].formatted_address;
-            }
-
-            return results[0].formatted_address;
         }
     }]);
 
@@ -1121,13 +1129,19 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: calc(100% - 35px);\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: 100%;\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
+exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-container {\n  display: flex;\n  margin: 0 0 5px 0;\n}\n.marker-box .marker-container .marker-icon {\n  margin: 0 3px 5px 0;\n}\n.marker-box .marker-container .marker-icon .icon {\n  width: 18px;\n  height: 18px;\n}\n.marker-box .marker-container .input-box {\n  width: calc(100% - 35px);\n}\n.marker-box .marker-container .input-box input {\n  height: 30px;\n  width: calc(100% - 25px);\n}\n.marker-box .marker-container .remove-icon {\n  margin: 3px 0 0 -23px;\n}\n.marker-box .marker-container .remove-icon img {\n  width: 18px;\n  height: 18px;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
 /* 18 */
+/***/ (function(module, exports) {
+
+module.exports = require("axios");
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1135,13 +1149,13 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\n.home {\n  width: 100%;\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  position: absolute;\n  z-index: 10;\n  width: calc(100% - 35px);\n  max-width: 720px;\n  height: 110px;\n  overflow-y: auto;\n}\n.home .markerbox-container .markerbox-box {\n  padding: 0 0 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon {\n  float: right;\n  margin: 5px 20px 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n.home .gmap {\n  margin: 95px 0 0 0;\n}\n.home .total-box {\n  display: flex;\n  align-items: center;\n  margin: 5px 0 0 0;\n}\n.home .total-box .total-text {\n  font-size: 20px;\n}\n.home .total-box .btn-container {\n  margin: 0 0 0 5px;\n}\n.home .total-box .btn-container button {\n  width: 120px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #fff solid;\n  border-radius: 3px;\n}\n", ""]);
+exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 0;\n}\ninput {\n  padding: 0 5px;\n  border-radius: 2px;\n}\ninput::placeholder {\n  padding: 0 5px;\n}\n.home {\n  width: 100%;\n  height: 100vh;\n  padding: 15px 15px 0 15px;\n}\n.home .markerbox-container {\n  position: absolute;\n  z-index: 10;\n  width: calc(100% - 35px);\n  max-width: 720px;\n  height: 110px;\n  overflow-y: auto;\n}\n.home .markerbox-container .markerbox-box {\n  padding: 0 0 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon {\n  float: right;\n  margin: 5px 40px 0 0;\n}\n.home .markerbox-container .markerbox-box .option-box .option-icon .icon {\n  width: 19px;\n  height: 19px;\n}\n.home .gmap {\n  margin: 95px 0 0 0;\n}\n.home .total-box {\n  display: flex;\n  align-items: center;\n  margin: 5px 0 0 0;\n}\n.home .total-box .total-text {\n  font-size: 20px;\n}\n.home .total-box .btn-container {\n  margin: 0 0 0 5px;\n}\n.home .total-box .btn-container button {\n  width: 120px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #fff solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1159,15 +1173,15 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRedux = __webpack_require__(2);
 
-var _DestinationBox = __webpack_require__(20);
+var _DestinationBox = __webpack_require__(21);
 
 var _DestinationBox2 = _interopRequireDefault(_DestinationBox);
 
-var _OptionPopUp = __webpack_require__(22);
+var _OptionPopUp = __webpack_require__(23);
 
 var _OptionPopUp2 = _interopRequireDefault(_OptionPopUp);
 
-__webpack_require__(24);
+__webpack_require__(25);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1396,7 +1410,7 @@ var mapDisPatchToProps = function mapDisPatchToProps(dispatch) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDisPatchToProps)(OrderDetail);
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1416,7 +1430,7 @@ var _propTypes = __webpack_require__(5);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-__webpack_require__(21);
+__webpack_require__(22);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1432,12 +1446,39 @@ var DestinationBox = function (_Component) {
     function DestinationBox(props) {
         _classCallCheck(this, DestinationBox);
 
-        return _possibleConstructorReturn(this, (DestinationBox.__proto__ || Object.getPrototypeOf(DestinationBox)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (DestinationBox.__proto__ || Object.getPrototypeOf(DestinationBox)).call(this, props));
+
+        _this.state = {
+            placeName: ''
+        };
+        return _this;
     }
 
     _createClass(DestinationBox, [{
+        key: 'componentWillMount',
+        value: function componentWillMount() {
+            var nameData = this.props.dest.placeName;
+            var placeName = '';
+            if (nameData.name != null) {
+                placeName += nameData.name + " - ";
+            }
+
+            if (nameData.address != null) {
+                placeName += nameData.address;
+            }
+
+            this.setState({ placeName: placeName });
+        }
+
+        // {this.props.dest.placeName || this.props.key}
+
+    }, {
         key: 'render',
         value: function render() {
+            var placeName = '';
+            if (this.props.dest.placeName.name != null) {
+                placeName = this.props.dest.placeName.name;
+            }
             return _react2.default.createElement(
                 'div',
                 { className: 'destination-box' },
@@ -1455,7 +1496,17 @@ var DestinationBox = function (_Component) {
                         _react2.default.createElement(
                             'div',
                             { className: 'name' },
-                            this.props.dest.placeName || this.props.key
+                            _react2.default.createElement(
+                                'span',
+                                { style: { fontWeight: "600" } },
+                                placeName || ''
+                            ),
+                            placeName && ' - ',
+                            _react2.default.createElement(
+                                'span',
+                                null,
+                                this.props.dest.placeName.address
+                            )
                         )
                     )
                 ),
@@ -1479,7 +1530,7 @@ DestinationBox.propTypes = {
 exports.default = DestinationBox;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1487,13 +1538,13 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n.destination-box .location-box .icon img {\n  width: 19px;\n  height: 19px;\n}\n.destination-box .location-box .location-name name {\n  font-size: 20px;\n}\n.destination-box .order-form {\n  display: flex;\n}\n.destination-box .order-form input {\n  margin: 0 5px 0 0;\n}\n", ""]);
+exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n.destination-box .location-box .icon img {\n  width: 19px;\n  height: 19px;\n}\n.destination-box .location-box .location-name name {\n  font-size: 20px;\n}\n.destination-box .order-form {\n  display: flex;\n  padding: 0 0 0 10px;\n}\n.destination-box .order-form input {\n  margin: 0 5px 0 0;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1509,7 +1560,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-__webpack_require__(23);
+__webpack_require__(24);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1686,7 +1737,7 @@ var OptionPopUp = function (_Component) {
 exports.default = OptionPopUp;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1700,7 +1751,7 @@ exports.push([module.i, ".option-pop {\n  display: none;\n  position: fixed;\n  
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1714,16 +1765,34 @@ exports.push([module.i, ".order-detail {\n  width: 100%;\n  margin-top: 20px;\n}
 
 
 /***/ }),
-/* 25 */
-/***/ (function(module, exports) {
-
-module.exports = require("axios");
-
-/***/ }),
 /* 26 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("react-dom");
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+var getPlaceName = exports.getPlaceName = function getPlaceName(results) {
+
+    var data = {
+        name: null,
+        address: null
+    };
+
+    if (results == undefined || results.length == 0) {
+        return data;
+    }
+
+    if (results[0].name != undefined) {
+        data.name = results[0].name;
+    }
+
+    data.address = results[0].formatted_address;
+
+    return data;
+};
 
 /***/ })
 /******/ ]);

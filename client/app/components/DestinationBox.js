@@ -6,9 +6,32 @@ class DestinationBox extends Component {
 
     constructor(props){
         super(props)
+        this.state = {
+            placeName: ''
+        }
     }
 
+    componentWillMount() {
+        const nameData = this.props.dest.placeName
+        let placeName = ''
+        if(nameData.name != null){
+            placeName += (nameData.name + " - ")
+        }
+
+        if(nameData.address != null){
+            placeName += nameData.address
+        }
+
+        this.setState({placeName})
+    }
+
+    // {this.props.dest.placeName || this.props.key}
+
     render() {
+        let placeName = ''
+        if(this.props.dest.placeName.name != null){
+            placeName = this.props.dest.placeName.name
+        }
         return (
             <div className="destination-box">
                 <div className="location-box">
@@ -17,7 +40,9 @@ class DestinationBox extends Component {
                     </div>
                     <div className="location-name">
                         <div className="name">
-                            {this.props.dest.placeName || this.props.key}
+                            <span style={{fontWeight: "600"}}>{placeName || ''}</span>
+                            {placeName && ' - '}
+                            <span>{this.props.dest.placeName.address}</span>
                         </div>
                     </div>
                 </div>

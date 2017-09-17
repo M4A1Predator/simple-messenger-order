@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import SearchBox from "react-google-maps/lib/components/places/SearchBox";
+import { getPlaceName } from '../helpers/PlaceUtils'
 import './markerbox.styl'
 
 class MarkerBox extends Component {
@@ -9,19 +10,21 @@ class MarkerBox extends Component {
         super(props)
 
         this.state ={
-            placeName: 'test'
+            placeName: ''
         }
     }
 
-    componentWillMount() {
-        const placeName = this.getPlaceName(this.props.point)
-        this.setState({
-            placeName
-        })
-    }
-
     componentWillReceiveProps(nextProps) {
-        const placeName = this.getPlaceName(nextProps.point)
+        const nameData = getPlaceName(nextProps.point)
+        let placeName = ''
+        if(nameData.name != null){
+            placeName += (nameData.name + ' - ')
+        }
+
+        if(nameData.address != null){
+            placeName += nameData.address
+        }
+        
         this.setState({
             placeName
         })
@@ -71,7 +74,6 @@ class MarkerBox extends Component {
     componentDidMount() {
         const autocomplete = new google.maps.places.Autocomplete(this.refs.findLocation)
         autocomplete.addListener('place_changed', () => {
-            console.log(autocomplete.getPlace())
             // this.setState({
             //     placeName: autocomplete.getPlace().formatted_address
             // })
@@ -87,18 +89,6 @@ class MarkerBox extends Component {
 
     onSelect(){
         this.props.onSelect(this.props.index)
-    }
-
-    getPlaceName(results){
-        if(results == undefined || results.length == 0){
-            return '';
-        }
-
-        if(results[0].name != undefined){
-            return results[0].name + ' - ' + results[0].formatted_address
-        }
-        
-        return results[0].formatted_address
     }
 }
 
