@@ -160,7 +160,7 @@ class Home extends Component {
                     />
                 </div>
                 <div className="total-box">
-                    <div className="total-text">Total {this.state.totalDistance.toFixed(2) + " KM"}</div>
+                    <div className="total-text">Total {this.state.totalDistance.toFixed(1) + " KM"}</div>
                     <div className="btn-container">
                         <button onClick={this.order.bind(this)}>Next</button>
                     </div>    

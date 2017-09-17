@@ -61,7 +61,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "/assets";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -186,13 +186,43 @@ module.exports = require("prop-types");
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+var getPlaceName = exports.getPlaceName = function getPlaceName(results) {
+
+    var data = {
+        name: null,
+        address: null
+    };
+
+    if (results == undefined || results.length == 0) {
+        return data;
+    }
+
+    if (results[0].name != undefined) {
+        data.name = results[0].name;
+    }
+
+    data.address = results[0].formatted_address;
+
+    return data;
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 exports.default = render;
 
 var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _server = __webpack_require__(7);
+var _server = __webpack_require__(8);
 
 var _server2 = _interopRequireDefault(_server);
 
@@ -200,17 +230,17 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _reducers = __webpack_require__(8);
+var _reducers = __webpack_require__(9);
 
 var _reducers2 = _interopRequireDefault(_reducers);
 
 var _redux = __webpack_require__(4);
 
-var _reduxThunk = __webpack_require__(10);
+var _reduxThunk = __webpack_require__(11);
 
 var _reduxThunk2 = _interopRequireDefault(_reduxThunk);
 
-var _App = __webpack_require__(11);
+var _App = __webpack_require__(12);
 
 var _App2 = _interopRequireDefault(_App);
 
@@ -246,13 +276,13 @@ function render(req, res) {
 }
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-dom/server");
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -264,7 +294,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _redux = __webpack_require__(4);
 
-var _appReducers = __webpack_require__(9);
+var _appReducers = __webpack_require__(10);
 
 var _appReducers2 = _interopRequireDefault(_appReducers);
 
@@ -283,7 +313,7 @@ var reducers = (0, _redux.combineReducers)({
 exports.default = reducers;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -315,13 +345,13 @@ var appReducers = function appReducers() {
 exports.default = appReducers;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = require("redux-thunk");
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -339,11 +369,11 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _Home = __webpack_require__(12);
+var _Home = __webpack_require__(13);
 
 var _Home2 = _interopRequireDefault(_Home);
 
-var _OrderDetail = __webpack_require__(20);
+var _OrderDetail = __webpack_require__(21);
 
 var _OrderDetail2 = _interopRequireDefault(_OrderDetail);
 
@@ -382,7 +412,7 @@ var App = function (_Component) {
 exports.default = App;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -398,7 +428,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDom = __webpack_require__(13);
+var _reactDom = __webpack_require__(14);
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
@@ -406,19 +436,19 @@ var _reactRedux = __webpack_require__(2);
 
 var _reactRouterDom = __webpack_require__(3);
 
-var _reactGoogleMaps = __webpack_require__(14);
+var _reactGoogleMaps = __webpack_require__(15);
 
-var _MarkerBox = __webpack_require__(15);
+var _MarkerBox = __webpack_require__(16);
 
 var _MarkerBox2 = _interopRequireDefault(_MarkerBox);
 
-var _PlaceUtils = __webpack_require__(26);
+var _PlaceUtils = __webpack_require__(6);
 
-var _axios = __webpack_require__(18);
+var _axios = __webpack_require__(19);
 
 var _axios2 = _interopRequireDefault(_axios);
 
-__webpack_require__(19);
+__webpack_require__(20);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -600,7 +630,7 @@ var Home = function (_Component) {
                         'div',
                         { className: 'total-text' },
                         'Total ',
-                        this.state.totalDistance.toFixed(2) + " KM"
+                        this.state.totalDistance.toFixed(1) + " KM"
                     ),
                     _react2.default.createElement(
                         'div',
@@ -960,19 +990,19 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch, prevState) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Home);
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-dom");
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-google-maps");
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -992,13 +1022,13 @@ var _propTypes = __webpack_require__(5);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-var _SearchBox = __webpack_require__(16);
+var _SearchBox = __webpack_require__(17);
 
 var _SearchBox2 = _interopRequireDefault(_SearchBox);
 
-var _PlaceUtils = __webpack_require__(26);
+var _PlaceUtils = __webpack_require__(6);
 
-__webpack_require__(17);
+__webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1134,13 +1164,13 @@ MarkerBox.defaultProps = {
 exports.default = MarkerBox;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = require("react-google-maps/lib/components/places/SearchBox");
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1154,13 +1184,13 @@ exports.push([module.i, ".marker-box {\n  width: 100%;\n}\n.marker-box .marker-c
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports) {
 
 module.exports = require("axios");
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1174,7 +1204,7 @@ exports.push([module.i, "html body {\n  height: 100%;\n  margin: 0;\n  padding: 
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1192,15 +1222,15 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRedux = __webpack_require__(2);
 
-var _DestinationBox = __webpack_require__(21);
+var _DestinationBox = __webpack_require__(22);
 
 var _DestinationBox2 = _interopRequireDefault(_DestinationBox);
 
-var _OptionPopUp = __webpack_require__(23);
+var _OptionPopUp = __webpack_require__(24);
 
 var _OptionPopUp2 = _interopRequireDefault(_OptionPopUp);
 
-__webpack_require__(25);
+__webpack_require__(26);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1344,7 +1374,7 @@ var OrderDetail = function (_Component) {
                         _react2.default.createElement(
                             'div',
                             { className: 'sum' },
-                            this.props.orderData && this.props.orderData.totalDistance.toFixed(2) || 0.0,
+                            this.props.orderData && this.props.orderData.totalDistance.toFixed(1) || 0.0,
                             ' KM'
                         )
                     ),
@@ -1359,7 +1389,7 @@ var OrderDetail = function (_Component) {
                         _react2.default.createElement(
                             'div',
                             { className: 'sum' },
-                            this.state.fee.toFixed(2),
+                            this.state.fee.toFixed(0),
                             ' THB'
                         )
                     )
@@ -1450,7 +1480,7 @@ var mapDisPatchToProps = function mapDisPatchToProps(dispatch) {
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDisPatchToProps)(OrderDetail);
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1470,7 +1500,7 @@ var _propTypes = __webpack_require__(5);
 
 var _propTypes2 = _interopRequireDefault(_propTypes);
 
-__webpack_require__(22);
+__webpack_require__(23);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1570,7 +1600,7 @@ DestinationBox.propTypes = {
 exports.default = DestinationBox;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1584,7 +1614,7 @@ exports.push([module.i, ".destination-box .location-box {\n  display: flex;\n}\n
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1600,7 +1630,7 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-__webpack_require__(24);
+__webpack_require__(25);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1784,7 +1814,7 @@ var OptionPopUp = function (_Component) {
 exports.default = OptionPopUp;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1798,7 +1828,7 @@ exports.push([module.i, ".option-pop {\n  display: none;\n  position: fixed;\n  
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -1806,40 +1836,10 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".order-detail {\n  display: table;\n  margin: 20px auto 0 auto;\n}\n@media (min-width: 960px) {\n  .order-detail {\n    width: 960px;\n  }\n}\n.order-detail .destination-container {\n  padding: 5px 5px;\n}\n.order-detail .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.order-detail .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.order-detail .option-box {\n  padding: 0 15px;\n}\n.order-detail .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.order-detail .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.order-detail .option-box .head .icon {\n  cursor: pointer;\n}\n.order-detail .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.order-detail .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.order-detail .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.order-detail .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.order-detail .detail-box {\n  margin: 50px 0 0 0;\n  padding: 0 15px;\n}\n.order-detail .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.order-detail .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.order-detail .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.order-detail .button-box {\n  text-align: center;\n  margin: 25px 0 20px 0;\n}\n.order-detail .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.order-detail .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
+exports.push([module.i, ".order-detail {\n  display: table;\n  margin: 20px auto 0 auto;\n}\n@media (min-width: 960px) {\n  .order-detail {\n    width: 960px;\n  }\n}\n.order-detail .destination-container {\n  padding: 5px 5px;\n}\n.order-detail .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.order-detail .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.order-detail .option-box {\n  padding: 0 15px;\n}\n.order-detail .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.order-detail .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.order-detail .option-box .head .icon {\n  cursor: pointer;\n}\n.order-detail .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.order-detail .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.order-detail .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.order-detail .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.order-detail .detail-box {\n  margin: 50px 0 0 0;\n  padding: 0 15px;\n}\n.order-detail .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.order-detail .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.order-detail .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.order-detail .button-box {\n  text-align: center;\n  margin: 25px 0 30px 0;\n}\n.order-detail .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.order-detail .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-var getPlaceName = exports.getPlaceName = function getPlaceName(results) {
-
-    var data = {
-        name: null,
-        address: null
-    };
-
-    if (results == undefined || results.length == 0) {
-        return data;
-    }
-
-    if (results[0].name != undefined) {
-        data.name = results[0].name;
-    }
-
-    data.address = results[0].formatted_address;
-
-    return data;
-};
 
 /***/ })
 /******/ ]);
