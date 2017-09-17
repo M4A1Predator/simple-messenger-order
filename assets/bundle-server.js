@@ -457,17 +457,18 @@ var displayDirections = function displayDirections(directions) {
             key: i });
     });
 };
-{/* ref={props.onMapLoad} */}
+
 var Gmap = (0, _reactGoogleMaps.withGoogleMap)(function (props) {
     return _react2.default.createElement(
         _reactGoogleMaps.GoogleMap,
         {
             ref: props.onMapLoad,
-            defaultZoom: 13,
+            defaultZoom: 14,
             center: props.pos,
             mapElement: _react2.default.createElement('div', { style: { height: '100%' } }),
             containerElement: _react2.default.createElement('div', { style: { height: '100%' } }),
-            onClick: props.onClickMap
+            onClick: props.onClickMap,
+            onDragStart: props.forceBlur
         },
         displayMarkers(props.markers),
         displayDirections(props.directions)
@@ -579,7 +580,7 @@ var Home = function (_Component) {
                 ),
                 _react2.default.createElement(
                     'div',
-                    { className: 'gmap', style: { height: "80%", display: this.state.isShowGmap ? 'block' : 'block' } },
+                    { className: 'gmap', style: { height: "calc(90% - 140px)", display: this.state.isShowGmap ? 'block' : 'block' } },
                     _react2.default.createElement(Gmap, {
                         pos: this.state.pos,
                         onMapLoad: this.handleMapLoad.bind(this),
@@ -588,7 +589,8 @@ var Home = function (_Component) {
                         onClickMap: this.handleMapClick.bind(this),
                         markers: this.state.markers,
                         directions: this.state.directions,
-                        ref: 'gmap'
+                        ref: 'gmap',
+                        forceBlur: this.forceBlur.bind(this)
                     })
                 ),
                 _react2.default.createElement(
@@ -655,10 +657,10 @@ var Home = function (_Component) {
         key: 'handleMapLoad',
         value: function handleMapLoad(ref) {
             // this.refs.map = ref;
-            if (ref) {
-                // new google.maps.places.PlacesService(ref.getDiv())
-                // console.log(ref.props.mapElement)
-            }
+            // if(ref){
+            // new google.maps.places.PlacesService(ref.getDiv())
+            // console.log(ref.props.mapElement)
+            // }
         }
     }, {
         key: 'handleMapClick',
@@ -676,6 +678,10 @@ var Home = function (_Component) {
                 markers[this.state.selectedMarker] = m;
                 this.setState({
                     markers: markers
+                });
+
+                $('input').each(function () {
+                    $(this).trigger('blur');
                 });
 
                 // Geocoder
@@ -870,18 +876,25 @@ var Home = function (_Component) {
             return data;
         }
     }, {
-        key: 'getPlaceName',
-        value: function getPlaceName(results) {
-            if (results == undefined || results.length == 0) {
-                return '';
-            }
-
-            if (results[0].name != undefined) {
-                return results[0].name + ' - ' + results[0].formatted_address;
-            }
-
-            return results[0].formatted_address;
+        key: 'forceBlur',
+        value: function forceBlur(e) {
+            $('input').each(function () {
+                $(this).trigger('blur');
+            });
         }
+
+        // getPlaceName(results){
+        //     if(results == undefined || results.length == 0){
+        //         return '';
+        //     }
+
+        //     if(results[0].name != undefined){
+        //         return results[0].name + ' - ' + results[0].formatted_address
+        //     }
+
+        //     return results[0].formatted_address
+        // }
+
     }, {
         key: 'order',
         value: function order(e) {
@@ -1793,7 +1806,7 @@ exports = module.exports = __webpack_require__(1)(undefined);
 
 
 // module
-exports.push([module.i, ".order-detail {\n  display: table;\n  margin: 20px auto 0 auto;\n}\n@media (min-width: 960px) {\n  .order-detail {\n    width: 960px;\n  }\n}\n.order-detail .destination-container {\n  padding: 5px 5px;\n}\n.order-detail .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.order-detail .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.order-detail .option-box {\n  padding: 0 15px;\n}\n.order-detail .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.order-detail .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.order-detail .option-box .head .icon {\n  cursor: pointer;\n}\n.order-detail .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.order-detail .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.order-detail .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.order-detail .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.order-detail .detail-box {\n  margin: 50px 0 0 0;\n  padding: 0 15px;\n}\n.order-detail .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.order-detail .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.order-detail .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.order-detail .button-box {\n  text-align: center;\n  margin: 25px 0 0 0;\n}\n.order-detail .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.order-detail .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
+exports.push([module.i, ".order-detail {\n  display: table;\n  margin: 20px auto 0 auto;\n}\n@media (min-width: 960px) {\n  .order-detail {\n    width: 960px;\n  }\n}\n.order-detail .destination-container {\n  padding: 5px 5px;\n}\n.order-detail .destination-container .destination-box {\n  margin: 0 0 15px 0;\n}\n.order-detail .destination-container .destination-box .location-box {\n  margin: 0 0 5px 0;\n}\n.order-detail .option-box {\n  padding: 0 15px;\n}\n.order-detail .option-box .head {\n  display: flex;\n  margin: 15px 0 0 0;\n}\n.order-detail .option-box .head .head-text {\n  margin: 0 10px 0 0;\n}\n.order-detail .option-box .head .icon {\n  cursor: pointer;\n}\n.order-detail .option-box .head .icon img {\n  width: 20px;\n  height: 20px;\n}\n.order-detail .option-box .selected-option-box {\n  display: flex;\n  height: 90px;\n}\n.order-detail .option-box .selected-option-box .option-icon {\n  margin: 20px 15px 0 0;\n}\n.order-detail .option-box .selected-option-box .option-icon img {\n  width: 30px;\n  height: 30px;\n}\n.order-detail .detail-box {\n  margin: 50px 0 0 0;\n  padding: 0 15px;\n}\n.order-detail .detail-box .text-container {\n  display: flex;\n  justify-content: space-between;\n}\n.order-detail .detail-box .text-container .head-text {\n  font-size: 22px;\n}\n.order-detail .detail-box .text-container .sum {\n  font-size: 22px;\n  font-weight: 600;\n}\n.order-detail .button-box {\n  text-align: center;\n  margin: 25px 0 20px 0;\n}\n.order-detail .button-box .back-btn {\n  width: 90px;\n  height: 30px;\n  color: #000;\n  background-color: #fff;\n  border: 1px #000 solid;\n  border-radius: 3px;\n  margin: 0 10px 0 0;\n}\n.order-detail .button-box .confirm-btn {\n  width: 150px;\n  height: 30px;\n  color: #fff;\n  background-color: #41985e;\n  border: 1px #000 solid;\n  border-radius: 3px;\n}\n", ""]);
 
 // exports
 

@@ -42,15 +42,16 @@ const displayDirections = (directions) => {
         )
     })
 }
-{/* ref={props.onMapLoad} */}
+
 const Gmap = withGoogleMap(props => (
     <GoogleMap
         ref={props.onMapLoad}
-        defaultZoom={13}
+        defaultZoom={14}
         center={props.pos}
         mapElement={<div style={{ height: '100%' }} />}
         containerElement={<div style={{ height: '100%' }} />}
         onClick={props.onClickMap}
+        onDragStart={props.forceBlur}
     >   
         {displayMarkers(props.markers)}
         {displayDirections(props.directions)}
@@ -145,7 +146,7 @@ class Home extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="gmap" style={{height: "80%", display: this.state.isShowGmap?'block':'block'}}>
+                <div className="gmap" style={{height: "calc(90% - 140px)", display: this.state.isShowGmap?'block':'block'}}>
                     <Gmap
                         pos={this.state.pos}
                         onMapLoad={this.handleMapLoad.bind(this)}
@@ -155,6 +156,7 @@ class Home extends Component {
                         markers={this.state.markers}
                         directions={this.state.directions}
                         ref="gmap"
+                        forceBlur={this.forceBlur.bind(this)}
                     />
                 </div>
                 <div className="total-box">
@@ -208,13 +210,14 @@ class Home extends Component {
     
     handleMapLoad(ref){
         // this.refs.map = ref;
-        if(ref){
+        // if(ref){
             // new google.maps.places.PlacesService(ref.getDiv())
             // console.log(ref.props.mapElement)
-        }
+        // }
     }
 
     handleMapClick(e){
+        
         if(this.state.selectedMarker >= 0){
             const m = {
                 pos: e.latLng,
@@ -226,6 +229,10 @@ class Home extends Component {
             markers[this.state.selectedMarker] = m
             this.setState({
                 markers
+            })
+
+            $('input').each(function(){
+                $(this).trigger('blur');
             })
 
             // Geocoder
@@ -412,17 +419,23 @@ class Home extends Component {
         return data
     }
 
-    getPlaceName(results){
-        if(results == undefined || results.length == 0){
-            return '';
-        }
-
-        if(results[0].name != undefined){
-            return results[0].name + ' - ' + results[0].formatted_address
-        }
-        
-        return results[0].formatted_address
+    forceBlur(e){
+        $('input').each(function(){
+            $(this).trigger('blur');
+        })
     }
+
+    // getPlaceName(results){
+    //     if(results == undefined || results.length == 0){
+    //         return '';
+    //     }
+
+    //     if(results[0].name != undefined){
+    //         return results[0].name + ' - ' + results[0].formatted_address
+    //     }
+        
+    //     return results[0].formatted_address
+    // }
 
     order(e){
         // Get data

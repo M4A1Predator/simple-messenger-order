@@ -12,8 +12,8 @@ console.log('START EXPRESS')
 // Middlwares
 const logger = morgan('tiny')
 app.use(logger)
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '20mb' }));
+app.use(bodyParser.urlencoded({ extended: false}));
 app.use(cookieParser())
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
